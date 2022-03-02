@@ -1,0 +1,30 @@
+{
+    "widgets": [
+        {
+            "height": 6,
+            "width": 24,
+            "y": 0,
+            "x": 0,
+            "type": "log",
+            "properties": {
+                "query": "SOURCE 'lyvecloud' | fields @message\n| display @timestamp, auditEntry.api.name, serviceAccountName",
+                "region": "us-west-2",
+                "title": "Log group: lyvecloud",
+                "view": "table"
+            }
+        },
+        {
+            "height": 6,
+            "width": 24,
+            "y": 6,
+            "x": 0,
+            "type": "log",
+            "properties": {
+                "query": "SOURCE 'lyvecloud' | fields @message\n| stats count() as requestCount by auditEntry.api.name",
+                "region": "us-west-2",
+                "title": "Request Count",
+                "view": "pie"
+            }
+        }
+    ]
+}
