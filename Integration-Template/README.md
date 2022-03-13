@@ -8,12 +8,11 @@ Write an introduction on the subject of integration you have chosen
 ## Requirements
 Details of your work environment: operating system, versions, installations to be performed for the integration, etc.
 
-## Include and Not-Included
-#### Include
-* Please describe what features are included.
+## Features List
+Please describe what features are included.
 
-#### Not-Included
-* Please describe what features are not-included.
+## Known Limitations 
+Please describe what features are not included.
 
 ##### Key areas to address during the challenge:
 * Security
@@ -30,7 +29,7 @@ Here's what you'll need:
 * Endpoint URL
 
 **Step 2:** 
-Complite the following steps in detail and explained, including execution commands. It is recommended to add pictures that simulate the steps if necessary.
+Complete the following steps in detail and explained, including execution commands. It is recommended to add pictures that simulate the steps if necessary.
 
 ## Results 
 show the results in pictures or in a short paragraph.
@@ -56,10 +55,10 @@ This section will describe the representation of each of the folders or files in
 ```
 
 ### `/code`
-This folder contains, all the code files.
+This folder contains all the code files.
 
 ### `/documentation`
-This folder contains, the demo video and presentation file.
+This folder contains the demo video and presentation file.
 
 ### `/images`
-This folder contains, all the images.
+This folder contains all the images.

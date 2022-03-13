@@ -15,7 +15,7 @@
 
 2. Clone your project by running the following command:
    ```
-   $ git clone https://gitlab.com/<username>/Lyve-Cloud-solutions-samples.git
+   $ git clone https://github.com/Seagate/Lyve-Cloud-solutions-samples.git
    ```
 
 3. List the current configured remote repository for your fork:
@@ -30,7 +30,7 @@
 
 4. Specify a new remote upstream repository that will be synced with the fork:
    ```
-   $ git remote add upstream https://github.com/lyvecloud-solutions/Lyve-Cloud-solutions-samples.git
+   $ git remote add upstream https://github.com/Seagate/Lyve-Cloud-solutions-samples.git
    ```
 
 5. Verify the new upstream repository you've specified for your fork:
@@ -41,8 +41,8 @@
    ```
    origin   https://github.com/barviv-seagate/Lyve-Cloud-solutions-samples.git (fetch)
    origin   https://github.com/barviv-seagate/Lyve-Cloud-solutions-samples.git (push)
-   upstream https://github.com/lyvecloud-solutions/Lyve-Cloud-solutions-samples.git (fetch)
-   upstream https://github.com/lyvecloud-solutions/Lyve-Cloud-solutions-samples.git (push)
+   upstream https://github.com/Seagate/Lyve-Cloud-solutions-samples.git (fetch)
+   upstream https://github.com/Seagate/Lyve-Cloud-solutions-samples.git (push)
    ```
 
 6. Make you origin repository same as an upstream repository:
@@ -93,7 +93,7 @@
    ```
 
 3. To commit your code changes use (m = message, s = signature):   
-   **Note:** -s (DCO) = Developer Certificate of Origin and Contributor License Agreement, LyveCloud always requires DCO.
+   **Note:** -s (DCO) = Developer Certificate of Origin and Contributor License Agreement, Lyve Cloud always requires DCO.
    ```
    $ git commit -s -m "your-comment"
    ```
@@ -121,31 +121,11 @@
    remote: Resolving deltas: 100% (1/1), completed with 1 local object.
    remote:
    remote: Create a pull request for 'bari' on GitHub by visiting:
-   remote:      https://github.com/lyvecloud-solutions/Lyve-Cloud-solutions-samples/pull/new/bari
+   remote:      https://github.com/Seagate/Lyve-Cloud-solutions-samples/pull/new/bari
    remote:
    To https://github.com/barviv-seagate/Lyve-Cloud-solutions-samples.git
     * [new branch]      bari -> bari
    Branch 'bari' set up to track remote branch 'bari' from 'origin'.
-   ```
-
-### Commit your Code
-
-1. Use the command below to add all the files that need to be pushed to the git staging area:
-   ```
-   $ git add .
-   ```
-
-2. To commit your code changes use:
-   ```
-   $ git commit -s -m "comment"
-   ```
-
-3. Push the changes to your fork: 
-   ```
-   $ git push origin 'your-local-branch-name'
-   ```
-   **Sample Output:**
-   ```
    ```
 
 ### Create a Pull Request

@@ -6,8 +6,8 @@ First, thanks for taking the time to contribute! ❤️
 
 There are plenty of ways you can contribute to this Solutions Samples repository:
 
-- Help improve an existing soltion by suggeting code changes or reporting [issues](https://github.com/lyvecloud-solutions/Lyve-Cloud-solutions-samples/issues).
-- Suggest a new solution by submitting a pull request (use our [template](https://github.com/lyvecloud-solutions/Lyve-Cloud-solutions-samples/tree/main/Integration%20Template))
+- Help improve an existing soltion by suggeting code changes or reporting [issues](https://github.com/Seagate/Lyve-Cloud-solutions-samples/issues).
+- Suggest a new solution by submitting a pull request (use our [template](https://github.com/Seagate/Lyve-Cloud-solutions-samples/tree/main/Integration-Template))
 - Help improve our documentation.
 - Anything else you think that would make this repository better.
 
