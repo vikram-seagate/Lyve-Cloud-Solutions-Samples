@@ -83,7 +83,7 @@ Here's what you'll need:
 
 ## Results 
 After a successful implementation you should see the following dashboard: 
-![CloudWatch Dashboard](images/dashboard.PNG)
+![CloudWatch Dashboard](images/dashboard.png)
 
 ## Tested by:
 * December 12, 2021: Avi Wolicki on Linux
