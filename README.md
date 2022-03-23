@@ -11,7 +11,7 @@ Notice the integration solutions are not part of the Lyve Cloud product.
 ## Getting Started
 - Browse our repository to find usefull tools for your needs (as listed below) or to get inspiration for building your integration solution.
 - Have a question? Let's have a [discussion](https://github.com/Seagate/Lyve-Cloud-solutions-samples/discussions) (don't be shy). 
-- Want to crate and contribute your own solution? Read our [Contribution Guide](CONTRIBUTING.md).
+- Want to create and contribute your own solution? Read our [Contribution Guide](CONTRIBUTING.md).
 
 ## Integration Solutions
 1. ["CloudWatch"](CloudWatch/) sends Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.
