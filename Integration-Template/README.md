@@ -1,20 +1,17 @@
-# Integration Subject
+# Integration Solution Subject
 
 [Video Link](your-link)
 
 ## Introduction
-Write an introduction on the subject of integration you have chosen
+Write a subject introduction for the integration solution. 
 
 ## Requirements
-Details of your work environment: operating system, versions, installations to be performed for the integration, etc.
-
-## Features List
-Please describe what features are included.
+Details of your environment: operating system, versions, installations to be performed for the integration solution, etc.
 
 ## Known Limitations 
-Please describe what features are not included.
+Please describe know limitations in the submitted integration solution.
 
-##### Key areas to address during the challenge:
+##### Key areas to address during the challenge
 * Security
 * Performance
 * Resiliency 
@@ -29,16 +26,16 @@ Here's what you'll need:
 * Endpoint URL
 
 **Step 2:** 
-Complete the following steps in detail and explained, including execution commands. It is recommended to add pictures that simulate the steps if necessary.
+Complete the following steps in detail and explain the execution commands. It is recommended to add images that simulate the steps.
 
 ## Results 
-show the results in pictures or in a short paragraph.
+Show the results using images or a short paragraph.
 
-## Tested by:
+## Tested by
 * August 22, 2021: Bari Arviv (bari.arviv@seagate.com) on Ubuntu 20.4
 * month day, year: full_name (email) on your_environment
 
-## **Note:** All files should be uploaded (all the files you used for the integration) under one folder, including the README.md file. 
+## **Note:** All files should be uploaded (all the files you used for the integration solution) under one folder, including the README.md file. 
 ### Project Structure
 
 This section will describe the representation of each of the folders or files in the structure.

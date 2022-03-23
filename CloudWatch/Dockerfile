@@ -8,22 +8,17 @@ WORKDIR /app
 ADD . /app
 
 # Install cron
-RUN apt-get -y update && apt-get -y upgrade
-RUN apt-get install -y cron
+RUN apt-get -y update && apt-get install -y --no-install-recommends cron && rm -rf /var/lib/apt/lists/*
 
 # Install the dependencies
 RUN pip3.8 install -r requirements.txt
 
-
 # Create & Configure Crontab
-COPY bubble-cron /etc/cron.d/bubble-cron
+COPY cron /etc/cron.d/cron
 RUN service cron start
-RUN chmod +x /etc/cron.d/bubble-cron
-RUN apt-get -y install vim
-RUN crontab /etc/cron.d/bubble-cron
+RUN chmod +x /etc/cron.d/cron
+RUN crontab /etc/cron.d/cron
 RUN touch /var/log/cron.log
 
-CMD cron && tail -f /var/log/cron.log
-
 # Initial run
-CMD ["python", "engine.py"]
+CMD ["/usr/sbin/cron","-f"]

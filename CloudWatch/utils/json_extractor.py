@@ -3,7 +3,7 @@ import json
 class JsonExtractor:
     @classmethod
     def from_file(self, file_path):
-        file = open(file_path)
-        content_json = json.loads(file.read())
-        file.close()
+        with open(file_path, 'r') as file:
+            content_json = json.loads(file.read())
+
         return content_json
