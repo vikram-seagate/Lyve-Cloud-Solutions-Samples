@@ -14,6 +14,6 @@ Notice the integration solutions are not part of the Lyve Cloud product.
 - Want to create and contribute your own solution? Read our [Contribution Guide](CONTRIBUTING.md).
 
 ## Integration Solutions
-1. ["CloudWatch"](CloudWatch/) sends Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.
+1. [An integration solution example](CloudWatch/) that sends Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.
 
 The repository is licensed under the [Apache 2.0 License](LICENSE).
