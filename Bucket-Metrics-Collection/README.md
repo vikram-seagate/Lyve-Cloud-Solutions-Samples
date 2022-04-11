@@ -29,9 +29,10 @@ This repository provides a sample code to show how to configure, schedule and pu
 ## Setup Instructions
 ### Step 1: Get Lyve Cloud credentials and endpoints
 Login to Lyve Cloud console, create a Service Account with appropriate permissions and extract the following:
-	* Access Key
-	* Secret key
-	* Endpoint URL
+
+- Access Key
+- Secret key
+- Endpoint URL
 
 
 ### Step 2: Store Lyve Cloud credentials securely in AWS
@@ -40,9 +41,9 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 3. Choose `Other type of secret` for Secret type
 4. Under Key/value pairs, create key/value pairs for the following:
 
-	* Key: lc_access_key, Value: [Access key from step 1]
-	* Key: lc_secret_key, Value: [Secret key from step 1]
-	* Key: lc_endpoint_url, Value: [Endpoint URL including https:// from step 1]
+	* Key: `lc_access_key`, Value: `[Access key from step 1]`
+	* Key: `lc_secret_key`, Value: `[Secret key from step 1]`
+	* Key: `lc_endpoint_url`, Value: `[Endpoint URL including https:// from step 1]`
 
 	![Store a new secret](images/step2-pic1.png)
 
@@ -101,7 +102,7 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 
 6. Click `Create function`
 7. Open the Lambda function
-8. Copy and Paste the contents of `lambda_function.py` into the Code source section
+8. Copy and Paste the contents of [lambda_function.py](code/lambda_function.py) into the Code source section
 9. Click `Deploy`
 
 	![Deploy](images/step4-pic4.png)
@@ -116,8 +117,8 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 	![General configuration](images/step4-pic6.png)
 
 13. Edit `Environment variables` to add the following Key/Value pairs
-	* Key: REGION, Value: `us-west-1`
-	* Key: SECRET_KEY, Value: `LyveCloudKeys` – Secret name created earlier
+	* Key: `REGION`, Value: `us-west-1`
+	* Key: `SECRET_KEY`, Value: `LyveCloudKeys` – Secret name created earlier
 
 	![Environment variables](images/step4-pic7.png)
 
@@ -171,7 +172,7 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 	![Create dashboard](images/step6-pic1.png)
 
 5. A popup (Add widget) will appear, choose your desired widget
-6. On next screen popup, Choose `Metrics`
+6. On next popup screen, Choose `Metrics`
 
 	![Metrics](images/step6-pic2.png)
 
@@ -192,16 +193,16 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 	![Custom dashboards](images/step6-pic6.png)
 
 
-## Architecture Diagram
-Given below is the overall architecture diagram of this solution:
-
-![Architecture diagram](images/architecture.png)
-
-
 ## Results 
 After a successful implementation you should see a similar dashboard as follows:
 
 ![CloudWatch Dashboard](images/sample-dashboard.png)
+
+
+## Architecture Diagram
+Given below is the overall architecture diagram of this solution:
+
+![Architecture diagram](images/architecture.png)
 
 
 ### Project Structure
