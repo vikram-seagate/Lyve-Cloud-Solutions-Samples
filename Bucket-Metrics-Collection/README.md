@@ -101,7 +101,7 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 
 6. Click `Create function`
 7. Open the Lambda function
-8. Copy and Paste the contents of lambda_function.py into the Code source section
+8. Copy and Paste the contents of `lambda_function.py` into the Code source section
 9. Click `Deploy`
 
 	![Deploy](images/step4-pic4.png)
@@ -215,8 +215,8 @@ This section will describe the representation of each of the folders or files in
 │   └── sample-dashboard-2.json
 ├── images
 │   └── <Collection of .png files>
-├── lambda-functions
-│   └── collect_metrics.py
+├── code
+│   └── lambda_function.py
 └── .gitignore
 ```
 
@@ -226,6 +226,6 @@ This folder contains samples of dashboards that can be imported to CloudWatch.
 ### `/images`
 Contains images for the documentation.
 
-### `/lambda-functions`
+### `/code`
 This folder contains the lambda functions that are used to pull lyve cloud bucket metrics.
 
