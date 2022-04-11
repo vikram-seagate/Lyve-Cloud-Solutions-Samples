@@ -1,7 +1,7 @@
 # Lyve Cloud Bucket Metrics Collection - using AWS Lambda
 
 ## Introduction
-The purpose of this solution is to showcase how Lyve Cloud bucket metrics can be securely pulled by hyperscalers(AWS) using their native services such as Lambda. Once the metrics are pulled it can be displayed using AWS CloudWatch dashboards. A sample dashboard is also provided as part of this solution for reference. This is by no means a complete solution that can be used in a production environment.
+The purpose of this solution is to showcase how Lyve Cloud bucket metrics can be securely pulled using AWS Lambda. Once the metrics are pulled it can be displayed using AWS CloudWatch dashboards. A sample dashboard is also provided as part of this solution for reference. This is by no means a complete solution that can be used in a production environment.
 
 ## Requirements
 Before you start, please make sure you have these requirements and information in place:
