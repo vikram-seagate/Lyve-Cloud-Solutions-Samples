@@ -195,13 +195,13 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 ## Architecture Diagram
 Given below is the overall architecture diagram of this solution:
 
-	![Architecture diagram](images/architecture.png)
+![Architecture diagram](images/architecture.png)
 
 
 ## Results 
 After a successful implementation you should see a similar dashboard as follows:
 
-	![CloudWatch Dashboard](images/sample-dashboard.png)
+![CloudWatch Dashboard](images/sample-dashboard.png)
 
 
 ### Project Structure
