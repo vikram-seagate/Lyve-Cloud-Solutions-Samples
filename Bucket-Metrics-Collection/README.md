@@ -194,7 +194,7 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 
 
 ## Results 
-After a successful implementation you should see a similar dashboard as follows:
+A sample CloudWatch dashboard for illustration:
 
 ![CloudWatch Dashboard](images/sample-dashboard.png)
 
