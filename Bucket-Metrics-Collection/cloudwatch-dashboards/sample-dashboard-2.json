@@ -1,0 +1,51 @@
+{
+    "widgets": [
+        {
+            "height": 6,
+            "width": 8,
+            "y": 0,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "view": "pie",
+                "metrics": [
+                    [ "LyveCloudBucketSizes", "BucketSizeBytes", "BucketName", "siva-lyvecloud-demo-bucket-41" ],
+                    [ "...", "siva-test-bucket-uw1" ]
+                ],
+                "region": "us-west-1"
+            }
+        },
+        {
+            "height": 6,
+            "width": 8,
+            "y": 0,
+            "x": 8,
+            "type": "metric",
+            "properties": {
+                "view": "bar",
+                "metrics": [
+                    [ "LyveCloudBucketSizes", "NumberOfObjects", "BucketName", "siva-lyvecloud-demo-bucket-41" ],
+                    [ "...", "siva-test-bucket-uw1" ]
+                ],
+                "region": "us-west-1"
+            }
+        },
+        {
+            "height": 3,
+            "width": 16,
+            "y": 6,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "view": "singleValue",
+                "metrics": [
+                    [ "LyveCloudBucketSizes", "BucketSizeBytes", "BucketName", "siva-lyvecloud-demo-bucket-41" ],
+                    [ ".", "NumberOfObjects", ".", "." ],
+                    [ ".", "BucketSizeBytes", ".", "siva-test-bucket-uw1" ],
+                    [ ".", "NumberOfObjects", ".", "." ]
+                ],
+                "region": "us-west-1"
+            }
+        }
+    ]
+}
