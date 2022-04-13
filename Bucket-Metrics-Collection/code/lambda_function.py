@@ -19,9 +19,7 @@ def lambda_handler(event, context):
 
     secret_name = os.environ['SECRET_KEY']
     region_name = os.environ['REGION']
-    
-    # log.info('Secret: %s, Region: %s' % (secret_name, region_name))
-    
+        
     # In this sample we only handle the specific exceptions for the 'GetSecretValue' API.
     # See https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
     # We rethrow the exception by default.
@@ -70,26 +68,31 @@ def lambda_handler(event, context):
 
     ctr = 0
     for i in s3_response['Buckets']:
-        bucket_name = s3_response['Buckets'][ctr]['Name']
-        s3_obj_response = s3_client.list_objects(Bucket=bucket_name)['Contents']
-        bucket_size = sum(obj['Size'] for obj in s3_obj_response)
-
+        bucket_size = 0
         count_obj = 0
-        nextToken = ''
-        while nextToken != 'Done':
-            if nextToken == '':
-                result = s3_client.list_objects_v2(Bucket=bucket_name, MaxKeys=100)
-            else:
-                result = s3_client.list_objects_v2(Bucket=bucket_name, MaxKeys=100, ContinuationToken=nextToken)
-            # log.info(result)
-            count_obj += sum(1 for i in result['Contents'])
+        bucket_name = s3_response['Buckets'][ctr]['Name']
+        s3_obj_response = s3_client.list_objects(Bucket=bucket_name)
 
-            if 'NextContinuationToken' in result:
-                nextToken = result['NextContinuationToken']
-                # log.info('nextToken found: %s', nextToken)
-            else:
-                nextToken = 'Done'
-                # log.info('no nextToken found, setting to %s', nextToken)
+        # Check for non-empty bucket. If empty, create entry with zero size and objects
+        if "Contents" in s3_obj_response:
+            bucket_size = sum(obj['Size'] for obj in s3_obj_response['Contents'])
+
+            nextToken = ''
+            while nextToken != 'Done':
+                if nextToken == '':
+                    result = s3_client.list_objects_v2(Bucket=bucket_name, MaxKeys=100)
+                else:
+                    result = s3_client.list_objects_v2(Bucket=bucket_name, MaxKeys=100, ContinuationToken=nextToken)
+                
+                if "Contents" not in result:
+                    continue
+
+                count_obj += sum(1 for i in result['Contents'])
+
+                if 'NextContinuationToken' in result:
+                    nextToken = result['NextContinuationToken']
+                else:
+                    nextToken = 'Done'
 
         log.info('Bucket - %s: total bucket size: %.2f, total objects: %.0f' % (bucket_name, bucket_size, count_obj))
 
