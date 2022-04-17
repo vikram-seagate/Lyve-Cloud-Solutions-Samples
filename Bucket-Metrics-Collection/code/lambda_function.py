@@ -1,9 +1,8 @@
-import boto3
-import base64
-import logging
-import json
 import os
 import time
+import json
+import boto3
+import logging
 from botocore.exceptions import ClientError
 
 log = logging.getLogger()
@@ -15,8 +14,9 @@ endTime = time.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 smClient = boto3.client('secretsmanager')
 cwClient = boto3.client('cloudwatch')
-def lambda_handler(event, context):
 
+
+def lambda_handler(event, context):
     secret_name = os.environ['SECRET_KEY']
     region_name = os.environ['REGION']
         
@@ -55,44 +55,27 @@ def lambda_handler(event, context):
         if 'SecretString' in get_secret_value_response:
             secret = get_secret_value_response['SecretString']
             data = json.loads(secret)
-        else:
-            decoded_binary_secret = base64.b64decode(get_secret_value_response['SecretBinary'])
-            
+
     s3_session = boto3.Session(aws_access_key_id     = data['lc_access_key'],
                                aws_secret_access_key = data['lc_secret_key'],
                                region_name           = region_name)
-    s3_client = s3_session.client('s3',
-                                  endpoint_url       = data['lc_endpoint_url'])
-
+    s3_client = s3_session.client('s3', endpoint_url = data['lc_endpoint_url'])
     s3_response = s3_client.list_buckets()
 
-    ctr = 0
-    for i in s3_response['Buckets']:
+    for bucket in s3_response['Buckets']:
         bucket_size = 0
         count_obj = 0
-        bucket_name = s3_response['Buckets'][ctr]['Name']
-        s3_obj_response = s3_client.list_objects(Bucket=bucket_name)
+        bucket_name = bucket['Name']
+        s3_obj_response = s3_client.list_objects_v2(Bucket=bucket_name)
 
         # Check for non-empty bucket. If empty, create entry with zero size and objects
         if "Contents" in s3_obj_response:
             bucket_size = sum(obj['Size'] for obj in s3_obj_response['Contents'])
+            count_obj += len(s3_obj_response['Contents'])
 
-            nextToken = ''
-            while nextToken != 'Done':
-                if nextToken == '':
-                    result = s3_client.list_objects_v2(Bucket=bucket_name, MaxKeys=100)
-                else:
-                    result = s3_client.list_objects_v2(Bucket=bucket_name, MaxKeys=100, ContinuationToken=nextToken)
-                
-                if "Contents" not in result:
-                    continue
-
-                count_obj += sum(1 for i in result['Contents'])
-
-                if 'NextContinuationToken' in result:
-                    nextToken = result['NextContinuationToken']
-                else:
-                    nextToken = 'Done'
+            while s3_obj_response['IsTruncated']:
+                s3_obj_response = s3_client.list_objects_v2(Bucket=bucket_name, ContinuationToken=s3_obj_response['NextContinuationToken'])
+                count_obj += len(s3_obj_response['Contents'])
 
         log.info('Bucket - %s: total bucket size: %.2f, total objects: %.0f' % (bucket_name, bucket_size, count_obj))
 
@@ -125,4 +108,3 @@ def lambda_handler(event, context):
                 }
             ]
         )
-        ctr += 1
