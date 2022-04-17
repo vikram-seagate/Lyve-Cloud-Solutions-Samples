@@ -162,12 +162,12 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
  <p style="text-align:left"><img alt="Save dashboard" src="images/step6-pic5.png" width="1200"/></p>
 
 10. Once successfully saved, you should see it under Custom dashboards as follows:
- <p style="text-align:left"><img alt="Custom dashboards" src="images/step6-pic6.png" width="800"/></p>
+ <p style="text-align:left"><img alt="Custom dashboards" src="images/step6-pic6.png" width="1200"/></p>
 
 
 ## Results 
 A sample CloudWatch dashboard for illustration: 
- <p style="text-align:center"><img alt="CloudWatch Dashboard" src="images/sample-dashboard.png" width="800"/></p>
+ <p style="text-align:center"><img alt="CloudWatch Dashboard" src="images/sample-dashboard.png" width="1200"/></p>
 
 
 ## Architecture Diagram
