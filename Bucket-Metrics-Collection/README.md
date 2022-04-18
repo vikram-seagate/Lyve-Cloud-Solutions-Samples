@@ -1,8 +1,9 @@
 # Lyve Cloud Bucket Metrics Collection - using AWS Lambda
 
 ## Introduction
-The purpose of this solution is to showcase how Lyve Cloud bucket metrics can be securely pulled using AWS Lambda. 
-Once the metrics are pulled it can be displayed using AWS CloudWatch dashboards. \
+The purpose of this integration solution is to demonstrate how Lyve Cloud bucket metrics can be securely pulled using AWS Lambda and displayed in AWS CloudWatch.
+The bucket metrics displayed in this solution are: number of objects and bucket size. These metrics are calculated for the buckets that Lyve Cloud credentials can access.
+Once the metrics are pulled, it can be displayed using AWS CloudWatch dashboards.
 A sample dashboard is also provided as part of this solution for reference. Please notice this is not a complete integration solution, and it is not intended for production usage.
 
 ## Requirements
