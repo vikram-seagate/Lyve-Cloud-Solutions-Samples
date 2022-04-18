@@ -1,3 +1,6 @@
+[![ license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Seagate/Lyve-Cloud-Solutions-Samples/blob/main/LICENSE)
+[![GitHub contributors](https://img.shields.io/github/contributors/Seagate/cortx)](https://github.com/Seagate/Lyve-Cloud-Solutions-Samples/graphs/contributors/)
+
 # Lyve Cloud solutions samples
 
 <img src="images/LyveCloud-logo.png?raw=true" width="700">
