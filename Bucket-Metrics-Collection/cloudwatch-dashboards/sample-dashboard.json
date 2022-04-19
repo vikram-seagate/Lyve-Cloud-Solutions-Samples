@@ -1,0 +1,79 @@
+{
+    "widgets": [
+        {
+            "height": 6,
+            "width": 6,
+            "y": 3,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ "LyveCloudBucketSizes", "BucketSizeBytes", "BucketName", "siva-lyvecloud-demo-bucket-41", "StorageType", "StandardStorage", { "visible": false } ],
+                    [ "...", "siva-test-bucket-uw1", ".", ".", { "visible": false } ],
+                    [ ".", ".", ".", "siva-lyvecloud-demo-bucket-41" ],
+                    [ "...", "siva-test-bucket-uw1" ]
+                ],
+                "view": "bar",
+                "region": "us-west-1",
+                "period": 300,
+                "stat": "Average"
+            }
+        },
+        {
+            "height": 5,
+            "width": 12,
+            "y": 9,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ "LyveCloudBucketSizes", "BucketSizeBytes", "BucketName", "siva-lyvecloud-demo-bucket-41", "StorageType", "StandardStorage", { "visible": false } ],
+                    [ "...", "siva-test-bucket-uw1", ".", ".", { "visible": false } ],
+                    [ ".", ".", ".", "siva-lyvecloud-demo-bucket-41" ],
+                    [ "...", "siva-test-bucket-uw1" ]
+                ],
+                "view": "pie",
+                "region": "us-west-1",
+                "period": 300,
+                "stat": "Average"
+            }
+        },
+        {
+            "height": 3,
+            "width": 12,
+            "y": 0,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ "LyveCloudBucketSizes", "BucketSizeBytes", "BucketName", "siva-lyvecloud-demo-bucket-41", "StorageType", "StandardStorage", { "visible": false } ],
+                    [ "...", "siva-test-bucket-uw1", ".", ".", { "visible": false } ],
+                    [ ".", ".", ".", "siva-lyvecloud-demo-bucket-41" ],
+                    [ ".", "NumberOfObjects", ".", "." ],
+                    [ ".", "BucketSizeBytes", ".", "siva-test-bucket-uw1" ],
+                    [ ".", "NumberOfObjects", ".", "." ]
+                ],
+                "view": "singleValue",
+                "region": "us-west-1",
+                "period": 300,
+                "stat": "Average"
+            }
+        },
+        {
+            "height": 6,
+            "width": 6,
+            "y": 3,
+            "x": 6,
+            "type": "metric",
+            "properties": {
+                "view": "bar",
+                "metrics": [
+                    [ "LyveCloudBucketSizes", "NumberOfObjects", "BucketName", "siva-lyvecloud-demo-bucket-41" ],
+                    [ "...", "siva-test-bucket-uw1" ]
+                ],
+                "region": "us-west-1",
+                "period": 300
+            }
+        }
+    ]
+}
