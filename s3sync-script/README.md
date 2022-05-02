@@ -38,21 +38,29 @@ Provide the access key ID and secreate access key of Lyve Cloud Service account
 2.  Varify the bucket is created
     aws –-profile <profile_name> --endpoint <endpoint> s3api list-buckets
  
-### Step 4: Copy the script to compute instance
+### Step 4: Copy the script to compute instance and replace the values of variables according to your requirment in scripts.
 1.  Create a local directory 's3script'
+    ```
     mkdir s3script
     cd s3script
     cp ~s3sync .
     chmod +x s3sync
+    ```
 2.  create a directory which you want to sync with s3 bucket
+    ```
     mkdir dist
+    ```
 3. Copy the data that needs to be sync with S3
 4. Create the trigger file
+    ```
     touch dist/trigger
+    ```
 
 ### Step 5: Add the crontab entry to run the script every 5 mins
- sudo crontab -e
-*/5 * * * * /home/user/s3script/s3sync.sh
+```
+ sudo crontab -u <user-name> -e
+*/5 * * * * /sbin/sh /home/user/s3script/s3sync.sh
+```
 
 
 ## Results 
