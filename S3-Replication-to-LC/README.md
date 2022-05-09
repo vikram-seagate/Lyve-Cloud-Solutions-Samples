@@ -44,18 +44,18 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
     * Key: `lc_access_key`, Value: `[Access key from step 1]`.
     * Key: `lc_secret_key`, Value: `[Secret key from step 1]`.
     * Key: `lc_endpoint_url`, Value: `[Endpoint URL including https:// from step 1]`.
-<p style="text-align:left"><img alt="Store a new secret" src="images/step2-pic1.png" width="600"/></p>
+<p style="text-align:left"><img alt="Store a new secret" src="images/step2-pic1.png" width="800"/></p>
 
 5. Click `Next`.
 6. Enter `Secret name` and make a note of it as you will need it during Lambda function creation. Rest of the field, you can leave it as default.
-<p style="text-align:left"><img alt="Secret name and description" src="images/step2-pic2.png" width="600"/></p>
+<p style="text-align:left"><img alt="Secret name and description" src="images/step2-pic2.png" width="800"/></p>
 
 7. Click `Next`.
 8. No need to set Secret rotation for this sample, so you can leave them to default.
 9. Click `Next`.
 10. Review the summary and Click `Store`.
 11. Once created, you will see them under Secrets.
-<p style="text-align:left"><img alt="Secrets" src="images/step2-pic3.png" width="600"/></p>
+<p style="text-align:left"><img alt="Secrets" src="images/step2-pic3.png" width="800"/></p>
 
 
 ### Step 3: Create IAM policy for Lambda function
@@ -64,7 +64,7 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 3. Click `Create role`.
 4. Choose `AWS service` for Trusted entity type.
 5. Choose `Lambda` for Use case.
-<p style="text-align:left"><img alt="Create role" src="images/step3-pic1.png" width="600"/></p>
+<p style="text-align:left"><img alt="Create role" src="images/step3-pic1.png" width="800"/></p>
 
 6. Click `Next`.
 7. Choose the following `Permissions policies`.
@@ -78,7 +78,7 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 <p style="text-align:left"><img alt="View permissions" src="images/step3-pic2-B.png" width="600"/></p>
 
 10. Make a note of the Role name as you will need it during Lambda creation.
- <p style="text-align:left"><img alt="Role" src="images/step3-pic3.png" width="600"/></p>
+ <p style="text-align:left"><img alt="Role" src="images/step3-pic3.png" width="800"/></p>
 
 
 ### Step 4: Create Lambda function
@@ -86,29 +86,29 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 2. Click `Create function`.
 3. Choose option `Author from scratch`.
 4. Enter `Function name` and choose `Python 3.9` for Runtime.
- <p style="text-align:left"><img alt="Create function" src="images/step4-pic1.png" width="800"/></p>
+ <p style="text-align:left"><img alt="Create function" src="images/step4-pic1.png" width="1000"/></p>
 
 5. Choose `Use an existing role` and pick the role created earlier from the drop-down list.
- <p style="text-align:left"><img alt="Execution role" src="images/step4-pic2.png" width="800"/></p>
+ <p style="text-align:left"><img alt="Execution role" src="images/step4-pic2.png" width="1000"/></p>
 
 6. Click `Create function`.
 7. Open the Lambda function.
 8. Copy and Paste the contents of [lambda_function.py](code/lambda_function.py) into the Code source section.
 9. Click `Deploy`.
- <p style="text-align:left"><img alt="Deploy" src="images/step4-pic4.png" width="600"/></p>
+ <p style="text-align:left"><img alt="Deploy" src="images/step4-pic4.png" width="1000"/></p>
 
 10. Ensure the Handler is set `lambda_function.lambda_handler`.
- <p style="text-align:left"><img alt="Runtime settings" src="images/step4-pic5.png" width="600"/></p>
+ <p style="text-align:left"><img alt="Runtime settings" src="images/step4-pic5.png" width="1000"/></p>
 
 11. Go over to the tab `Configuration`.
 12. Edit `General configuration` and set Timeout to max 15 mins, Memory to at least 1024 MB and Ephemeral storage to max 10240 MB.
- <p style="text-align:left"><img alt="General configuration" src="images/step4-pic6.png" width="600"/></p>
+ <p style="text-align:left"><img alt="General configuration" src="images/step4-pic6.png" width="1000"/></p>
 
 13. Edit `Environment variables` to add the following Key/Value pairs.
 	* Key: `REGION`, Value: `us-west-1`.
 	* Key: `SECRET_KEY`, Value: `LyveCloudKeys` – Secret name created earlier.
 	* Key: `TARGET_BUCKET`, Value: `<target lyve cloud bucket>`
- <p style="text-align:left"><img alt="Environment variables" src="images/step4-pic7.png" width="600"/></p>
+ <p style="text-align:left"><img alt="Environment variables" src="images/step4-pic7.png" width="1000"/></p>
 
 
 ### Step 5: Create S3 Event notification to call Lambda function
@@ -117,23 +117,23 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
 3. Click `Properties` tab.
 4. Click `Create event notification` under `Event notifications`.
 5. Enter a name.
- <p style="text-align:left"><img alt="Create event notification" src="images/step5-pic1.png" width="600"/></p>
+ <p style="text-align:left"><img alt="Create event notification" src="images/step5-pic1.png" width="800"/></p>
 
 6. Choose `All object create events (s3:ObjectCreated:*)` under Event types.
- <p style="text-align:left"><img alt="Event types" src="images/step5-pic2.png" width="600"/></p>
+ <p style="text-align:left"><img alt="Event types" src="images/step5-pic2.png" width="800"/></p>
 
 7. Under `Destination`.
 8. Choose `Lambda function` and pick the lambda function created earlier from the drop-down list.
- <p style="text-align:left"><img alt="Destination" src="images/step5-pic3.png" width="600"/></p>
+ <p style="text-align:left"><img alt="Destination" src="images/step5-pic3.png" width="800"/></p>
 
 9. Click `Save changes`.
 10. Once successfully created, it should show under Event notifications as follows:
- <p style="text-align:left"><img alt="Event notifications" src="images/step5-pic4.png" width="600"/></p>
+ <p style="text-align:left"><img alt="Event notifications" src="images/step5-pic4.png" width="800"/></p>
 
 
 ### Step 6: Test S3 replication to Lyve Cloud
 1. Upload a file/folder or Create folder in the S3 bucket.
- <p style="text-align:left"><img alt="Create objects" src="images/step6-pic1.png" width="600"/></p>
+ <p style="text-align:left"><img alt="Create objects" src="images/step6-pic1.png" width="1000"/></p>
 
 2. Check in the target Lyve Cloud bucket to see the file/folder is created.
 
