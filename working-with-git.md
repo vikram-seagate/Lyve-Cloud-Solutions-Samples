@@ -15,7 +15,7 @@
 
 2. Clone your project by running the following command:
    ```
-   $ git clone https://github.com/Seagate/Lyve-Cloud-solutions-samples.git
+   $ git clone https://github.com/barviv-seagate/Lyve-Cloud-Solutions-Samples.git
    ```
 
 3. List the current configured remote repository for your fork:
@@ -24,13 +24,13 @@
    ```
    **Sample Output:**
    ```
-   origin  https://github.com/barviv-seagate/Lyve-Cloud-solutions-samples.git (fetch)
-   origin  https://github.com/barviv-seagate/Lyve-Cloud-solutions-samples.git (push)
+   origin  https://github.com/barviv-seagate/Lyve-Cloud-Solutions-Samples.git (fetch)
+   origin  https://github.com/barviv-seagate/Lyve-Cloud-Solutions-Samples.git (push)
    ```
 
 4. Specify a new remote upstream repository that will be synced with the fork:
    ```
-   $ git remote add upstream https://github.com/Seagate/Lyve-Cloud-solutions-samples.git
+   $ git remote add upstream https://github.com/Seagate/Lyve-Cloud-Solutions-Samples.git
    ```
 
 5. Verify the new upstream repository you've specified for your fork:
@@ -39,10 +39,10 @@
    ```
    **Sample Output:**
    ```
-   origin   https://github.com/barviv-seagate/Lyve-Cloud-solutions-samples.git (fetch)
-   origin   https://github.com/barviv-seagate/Lyve-Cloud-solutions-samples.git (push)
-   upstream https://github.com/Seagate/Lyve-Cloud-solutions-samples.git (fetch)
-   upstream https://github.com/Seagate/Lyve-Cloud-solutions-samples.git (push)
+   origin   https://github.com/barviv-seagate/Lyve-Cloud-Solutions-Samples.git (fetch)
+   origin   https://github.com/barviv-seagate/Lyve-Cloud-Solutions-Samples.git (push)
+   upstream https://github.com/Seagate/Lyve-Cloud-Solutions-Samples.git (fetch)
+   upstream https://github.com/Seagate/Lyve-Cloud-Solutions-Samples.git (push)
    ```
 
 6. Make you origin repository same as an upstream repository:
@@ -56,8 +56,8 @@
    ```
    **Sample Output:**
    ```
-   C:> cd Lyve-Cloud-solutions-samples
-   C:\Lyve-Cloud-solutions-samples>git checkout -b bari
+   C:> cd Lyve-Cloud-Solutions-Samples
+   C:\Lyve-Cloud-Solutions-Samples>git checkout -b bari
    Switched to a new branch 'bari'
    ```
 
@@ -69,7 +69,7 @@
    ```
    **Sample Output:**
    ```
-   C:\Lyve-Cloud-solutions-samples>git status
+   C:\Lyve-Cloud-Solutions-Samples>git status
    On branch bari
    Untracked files:
      (use "git add <file>..." to include in what will be committed)
@@ -84,8 +84,8 @@
    ```
    **Sample Output:**
    ```
-   C:\Lyve-Cloud-solutions-samples>git add working-with-git.md
-   C:\Lyve-Cloud-solutions-samples>git status
+   C:\Lyve-Cloud-Solutions-Samples>git add working-with-git.md
+   C:\Lyve-Cloud-Solutions-Samples>git status
    On branch bari
    Changes to be committed:
      (use "git restore --staged <file>..." to unstage)
@@ -99,7 +99,7 @@
    ```
    **Sample Output:**
    ```
-   C:\Lyve-Cloud-solutions-samples>git commit -s -m "Add working with git"
+   C:\Lyve-Cloud-Solutions-Samples>git commit -s -m "Add working with git"
    [bari 5236f34] Add working with git for developers
     1 file changed, 81 insertions(+)
     create mode 100644 working-with-git.md
@@ -111,7 +111,7 @@
    ```
    **Sample Output:**
    ```
-   C:\Lyve-Cloud-solutions-samples>git push origin bari
+   C:\Lyve-Cloud-Solutions-Samples>git push origin bari
    Enumerating objects: 4, done.
    Counting objects: 100% (4/4), done.
    Delta compression using up to 8 threads
@@ -121,9 +121,9 @@
    remote: Resolving deltas: 100% (1/1), completed with 1 local object.
    remote:
    remote: Create a pull request for 'bari' on GitHub by visiting:
-   remote:      https://github.com/Seagate/Lyve-Cloud-solutions-samples/pull/new/bari
+   remote:      https://github.com/Seagate/Lyve-Cloud-Solutions-Samples/pull/new/bari
    remote:
-   To https://github.com/barviv-seagate/Lyve-Cloud-solutions-samples.git
+   To https://github.com/barviv-seagate/Lyve-Cloud-Solutions-Samples.git
     * [new branch]      bari -> bari
    Branch 'bari' set up to track remote branch 'bari' from 'origin'.
    ```
