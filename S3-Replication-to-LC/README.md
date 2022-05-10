@@ -26,7 +26,14 @@ There are limitations and functionality gaps to handle before this sample code c
 - The sample code only replicates newly created objects from S3 to Lyve Cloud as soon as they are created. Please note, existing objects are not replicated to Lyve Cloud.
 - Error capturing and reporting is limited, some failures may not be reported.
 
-**Note:** Full access permissions are provided for this sample code. However, for using this solution in a production environment the principle of the least privilege model should be applied.
+**Note:** Full access permissions are provided for this sample code. However, for using this solution in a production environment the principle of the least privilege model should be applied.  The least privileges required to run this solution are:
+- `s3:GetObject` - for `Resource` S3 ARN
+- `secretsmanager:GetSecretValue` - for `Resource` Secret ARN
+- `logs:CreateLogStream`
+- `logs:CreateLogGroup`
+- `logs:PutLogEvents`
+
+A sample privilege in JSON format is given below in the [Appendix](#appendix) section
 
 ## Setup Instructions
 ### Step 1: Get Lyve Cloud credentials and endpoints
@@ -172,3 +179,53 @@ Contains images for the documentation.
 
 ### `/code`
 This folder contains the lambda functions that are used to pull lyve cloud bucket metrics.
+
+
+## Appendix
+Given below a sample least privileges required for this solution in JSON format
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Sid0",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::sivascloud-lc-replication/*"
+            ]
+        },
+        {
+            "Sid": "Sid1",
+            "Effect": "Allow",
+            "Action": [
+                "secretsmanager:GetSecretValue"
+            ],
+            "Resource": [
+                "arn:aws:secretsmanager:us-west-1:123456789012:secret:LyveCloudKeys-abcxyz"
+            ]
+        },
+        {
+            "Sid": "Sid2",
+            "Effect": "Allow",
+            "Action": [
+                "logs:PutLogEvents"
+            ],
+            "Resource": [
+                "arn:aws:logs:*:123456789012:log-group:*:log-stream:*"
+            ]
+        },
+        {
+            "Sid": "Sid3",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:CreateLogGroup"
+            ],
+            "Resource": "arn:aws:logs:*:123456789012:log-group:*"
+        }
+    ]
+}
+```
