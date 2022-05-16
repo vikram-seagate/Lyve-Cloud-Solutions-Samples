@@ -14,21 +14,18 @@ PROFILE=adminuser
 
 function syncData()
 {
-
         dt=$(date '+%d/%m/%Y %H:%M:%S');
         echo "Datetime begin script : $dt"
-        # go to script directory
+        # Go to script directory
         cd /home/$USER/s3script
 
-        # deploy files to Lyve Cloud
+        # Deploy files to Lyve Cloud
         echo "copying data"
         /usr/local/bin/aws --profile $PROFILE --endpoint $ENDPOINT s3 sync dist/ $BUCKET --delete --follow-symlinks
 
         echo "Removing trigger"
         rm -vf /home/$USER/s3script/dist/trigger
-
 }
-
 
 # If log directory is not available, then create it
 if [ ! -d "$LOGDIR" ]; then mkdir -p $LOGDIR; fi
