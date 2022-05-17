@@ -12,7 +12,8 @@
 ### Screenshots
 
 ### Checklist
-- [ ] tested locally
-- [ ] installation instructions
+- [ ] I've signed my commits (git commit -s)
+- [ ] Code was tested locally
+- [ ] Installation instructions are provided
 
 I contribute this code under Apache License 2.0
