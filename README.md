@@ -1,3 +1,6 @@
+[![ license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Seagate/Lyve-Cloud-Solutions-Samples/blob/main/LICENSE)
+[![GitHub contributors](https://img.shields.io/github/contributors/Seagate/cortx)](https://github.com/Seagate/Lyve-Cloud-Solutions-Samples/graphs/contributors/)
+
 # Lyve Cloud solutions samples
 
 <img src="images/LyveCloud-logo.png?raw=true" width="700">
@@ -16,5 +19,6 @@ Notice the integration solutions are not part of the Lyve Cloud product.
 
 ## Integration Solutions
 1. [An integration solution example](CloudWatch/) that sends Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.
+2. [An integration solution example](Bucket-Metrics-Collection/) that calculates Lyve Cloud bucket metrics using AWS Lambda and displays them in AWS CloudWatch.
 
 The repository is licensed under the [Apache 2.0 License](LICENSE).
