@@ -14,4 +14,5 @@
 ### Checklist
 - [ ] tested locally
 - [ ] installation instructions
-- [ ] I contribute this code under Apache License 2.0
+
+I contribute this code under Apache License 2.0
