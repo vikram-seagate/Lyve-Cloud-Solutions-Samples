@@ -3,7 +3,7 @@
 ## Introduction
 There are some scenarios when the user wants to keep the local directory and Lyve Cloud bucket in sync. The expectation is local data and Lyve Cloud bucket data should be the same.
 If the user adds or removes any file or directory from the local directory, then it should also get added or removed from the Lyve Cloud bucket.
-The solution is a script using the `aws s3 sync` command. This script will copy contents from Linux based computer to Lyve Cloud when trigger file is created in the computer folder.
+The solution is a script using the `aws s3 sync` command. This is a one-way sync operation. This script will copy contents from Linux based computer to Lyve Cloud when trigger file is created in the computer folder.
 
 ## Problem statement
 Syncing a local directory content to Lyve Cloud bucket on-demand.
