@@ -39,7 +39,7 @@ Note over LyveCloud, Client: Repeat until 8 MB transferred
 
 
 ## Known Limitations 
-This solution does not do any caching like Least-Recently-Used. It is merely a transfer from the LyveCloud endpoint currently. Caching is a future implementation which either be done on both the middleware or CDN level. 
+This solution does not do any caching like Redis. It is merely a transfer from the LyveCloud endpoint currently. Caching is a future implementation which either be done on both the middleware or CDN level. 
 
 ## Running Steps
 **Step 0:** Change your directory to /code if you are not already in /code. All following steps are done in /code
@@ -89,7 +89,7 @@ This means that the ~30-70ms is roughly equivalent to the latency of the LyveClo
 
 Additional latency on production would be the latency of the CDN / FastAPI endpoint from the client. (Which may include SSL latency delay, authentication delay, etc)
 
-![TTFB](images\ttfb-result-1.png)
+![TTFB](images/ttfb-result-1.png)
 
 ### Project Structure
 
@@ -108,9 +108,6 @@ This section will describe the representation of each of the folders or files in
 
 ### `/code`
 This folder contains all the code files. It also includes the credentials file under config.json
-
-### `/documentation`
-This folder contains the demo video and presentation file.
 
 ### `/images`
 This folder contains all the images used in this README.
