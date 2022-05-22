@@ -113,9 +113,9 @@ Login to Lyve Cloud console, create a Service Account with appropriate permissio
  <p style="text-align:left"><img alt="General configuration" src="images/step4-pic6.png" width="1000"/></p>
 
 13. Edit `Environment variables` to add the following Key/Value pairs.
-	* Key: `REGION`, Value: `us-west-1` - This is the region of  the AWS S3 source bucket.
+	* Key: `REGION`, Value: `<target Lyve Cloud bucket region>`
 	* Key: `SECRET_KEY`, Value: `LyveCloudKeys` – Secret name created earlier.
-	* Key: `TARGET_BUCKET`, Value: `<target lyve cloud bucket>`
+	* Key: `TARGET_BUCKET`, Value: `<target Lyve Cloud bucket name>`
  <p style="text-align:left"><img alt="Environment variables" src="images/step4-pic7.png" width="1000"/></p>
 
 
