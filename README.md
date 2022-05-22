@@ -18,7 +18,8 @@ Notice the integration solutions are not part of the Lyve Cloud product.
 - Want to create and contribute your own solution? Read our [Contribution Guide](CONTRIBUTING.md).
 
 ## Integration Solutions
-1. [An integration solution example](cloudwatch/) that sends Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.
-2. [An integration solution example](bucket-metrics-collection/) that calculates Lyve Cloud bucket metrics using AWS Lambda and displays them in AWS CloudWatch.
+1. [An example for](cloudwatch/) sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.
+2. [An example for](bucket-metrics-collection/) calculating Lyve Cloud bucket metrics using AWS Lambda and displays them in AWS CloudWatch.
+3. [An example for](s3sync-local-to-lyvecloud/) on-demand one-way sync of local directory with Lyve Cloud bucket.
 
 The repository is licensed under the [Apache 2.0 License](LICENSE).
