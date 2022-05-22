@@ -21,5 +21,6 @@ Notice the integration solutions are not part of the Lyve Cloud product.
 1. [An example for](cloudwatch/) sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.
 2. [An example for](bucket-metrics-collection/) calculating Lyve Cloud bucket metrics using AWS Lambda and displays them in AWS CloudWatch.
 3. [An example for](s3sync-local-to-lyvecloud/) on-demand one-way sync of local directory with Lyve Cloud bucket.
+4. [An example for](s3-optimised-video-streaming/) Highly-optimised video streaming using Python and FastAPI, providing TTFB under less than 100ms
 
 The repository is licensed under the [Apache 2.0 License](LICENSE).
