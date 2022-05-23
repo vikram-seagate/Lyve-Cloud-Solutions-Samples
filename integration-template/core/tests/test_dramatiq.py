@@ -40,7 +40,7 @@ def test_middleware_check_task():
     task_uuid: str = "3fa6d0d6-b3e1-4687-bd6c-a9559235bcab"
     api: TaskAPI = TaskAPI(
         endpoint="http://128.199.125.233:8000",
-        token="***REMOVED***"
+        token="9fe5a7b70296be70a0c62b50ad30ca38dd763015"
     )
 
     api._check_task(task_uuid)

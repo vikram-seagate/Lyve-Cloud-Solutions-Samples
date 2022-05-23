@@ -147,7 +147,7 @@ def test_aws_bucket_download_raw():
 #def test_aws_head_bucket(patch_s3_head_bucket_ok):
 #    """Test AWS Head Bucket"""
 #    account: Account = Account(
-#        access_key="***REMOVED***",
-#        secret_key="***REMOVED***",
+#        access_key="AKIAS7EBPOVYRMO4WUGC",
+#        secret_key="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",
 #    )
 #    account.get_bucket("testvarchive2")
