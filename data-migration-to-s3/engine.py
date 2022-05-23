@@ -40,10 +40,10 @@ def run_migration(num_threads, migration_type, min_date, max_date, min_size, max
     def update(o):
         print(f"Downloading {o['Key']}...")
         data = from_client.get_object(Bucket=bucket_from, Key=o["Key"])
-        if min_size <= int(data["ContentLength"]) / 1000 <= max_size:
+        if not (min_size <= int(data["ContentLength"]) / 1000 <= max_size):
             print("Out of size range!")
             return
-        if min_date <= data["LastModified"] <= max_date:
+        if not (min_date <= data["LastModified"] <= max_date):
             print("Out of date range!")
             return
         to_client.upload_fileobj(data["Body"], bucket_to, o["Key"])
@@ -121,7 +121,6 @@ if __name__ == "__main__":
             "bucket_name": "",
         },
     }
-
     # Row 1
     Label(m, text="---Configuration---").grid(row=1, column=1)
 
@@ -195,19 +194,18 @@ if __name__ == "__main__":
 
     Label(m, text="Max Date:").grid(row=9, column=3)
     max_date = DateEntry(m, width=16, background="magenta3", foreground="white", bd=2)
-    print(max_date.get())
     max_date.grid(row=9, column=4)
 
     # Row 10
-    Label(m, text="Max Size (in KB):").grid(row=10, column=1)
-    max_size = Entry(m, width=20)
-    max_size.grid(row=10, column=2)
-    max_size.insert(0, "0")
-
-    Label(m, text="Min Size (in KB):").grid(row=10, column=3)
+    Label(m, text="Min Size (in KB):").grid(row=10, column=1)
     min_size = Entry(m, width=20)
-    min_size.grid(row=10, column=4)
-    min_size.insert(0, "1000000")
+    min_size.grid(row=10, column=2)
+    min_size.insert(0, "0")
+
+    Label(m, text="Max Size (in KB):").grid(row=10, column=3)
+    max_size = Entry(m, width=20)
+    max_size.grid(row=10, column=4)
+    max_size.insert(0, "1000000")
 
     Label(m, text="").grid(row=11, column=1)
 

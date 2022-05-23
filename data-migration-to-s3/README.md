@@ -1,6 +1,6 @@
-# Data Migration to S3
+# AWS S3 <> Lyve Cloud Data Migration Solution
 
-[Video Link]()
+[Video Link](https://vimeo.com/712735327)
 
 ## Introduction
 
@@ -70,19 +70,14 @@ This section will describe the representation of each of the folders or files in
 ```
 .
 |-images
-|-bin
-  |-engine.exe
+  |-gui-initial.png
 |-README.md
 |-engine.py
 |-requirements.txt
 ```
 
-The main logic is present in the `engine.py` file.
+The main logic is present in the `engine.py` file. In the future, the functions will be decoupled for easier readability and extensibility.
 
 ### `/images`
 
 This folder contains images shown on this `README`.
-
-### `/bin`
-
-This folder contains the engine.py executable.
