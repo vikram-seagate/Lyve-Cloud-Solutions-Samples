@@ -2,6 +2,8 @@
 
 [Video Link](https://vimeo.com/712735327)
 
+[Link to executable file](https://entuedu-my.sharepoint.com/:u:/g/personal/call0001_e_ntu_edu_sg/EXlyd1TRfb1Ctti9pcNkQjsBtdVeYufJkmOIaG9JwvmPgw?e=S0FNEH)
+
 ## Introduction
 
 This integration solution provides a user-friendly GUI for the data migration of all types of data between AWS S3 <> Lyve Cloud. It aims to be easy to use, highly observable and strongly featured.
@@ -52,17 +54,25 @@ Here's what you'll need:
 
 ### Step 3: Set up your environment
 
-**Set up without Docker:**
+**Set up:**
 
 1. Install all required packages: `pip3 install -r requirements.txt`.
 2. Run `python3 engine.py` to pull up the GUI.
-3. Fill in `Lyve Cloud Access Key ID`, `Lyve Cloud Secret Access Key`, `AWS Access Key ID` and `AWS Secret Access Key` with your credentials.
-4. Click `Generate Config File` - now, the dropdown for buckets should be populated.
-5. Choose `Lyve Cloud Bucket to Transfer` or `AWS Bucket to Transfer`.
-6. Change the number of threads (int), and indicate migration type (AWS to Lyve or vice versa).
-7. Click `Generate Config File` again.
-8. If necessary, include the filters for `Min Date`, `Max Date`, `Min Size` and `Max Size`.
-9. Click `Migrate Data` and wait for the data to migrate.
+
+**Set up using executable:**
+
+1. Download executable [here](https://entuedu-my.sharepoint.com/:u:/g/personal/call0001_e_ntu_edu_sg/EXlyd1TRfb1Ctti9pcNkQjsBtdVeYufJkmOIaG9JwvmPgw?e=S0FNEH)
+2. Double click the executable to pull up the GUI.
+
+**After getting the GUI running:**
+
+1. Fill in `Lyve Cloud Access Key ID`, `Lyve Cloud Secret Access Key`, `AWS Access Key ID` and `AWS Secret Access Key` with your credentials.
+2. Click `Generate Config File` - now, the dropdown for buckets should be populated.
+3. Choose `Lyve Cloud Bucket to Transfer` or `AWS Bucket to Transfer`.
+4. Change the number of threads (int), and indicate migration type (AWS to Lyve or vice versa).
+5. Click `Generate Config File` again.
+6. If necessary, include the filters for `Min Date`, `Max Date`, `Min Size` and `Max Size`.
+7. Click `Migrate Data` and wait for the data to migrate.
 
 ## Results
 
@@ -84,7 +94,7 @@ This section will describe the representation of each of the folders or files in
 |-engine.exe
 ```
 
-The main logic is present in the `engine.py` file. In the future, the functions will be decoupled for easier readability and extensibility. `engine.exe` is an executable created based on `engine.py` using `pyinstaller`.
+The main logic is present in the `engine.py` file. In the future, the functions will be decoupled for easier readability and extensibility. The link to the executable file is [here](https://entuedu-my.sharepoint.com/:u:/g/personal/call0001_e_ntu_edu_sg/EXlyd1TRfb1Ctti9pcNkQjsBtdVeYufJkmOIaG9JwvmPgw?e=S0FNEH), `engine.exe` is an executable created based on `engine.py` using `pyinstaller`.
 
 ### `/images`
 
