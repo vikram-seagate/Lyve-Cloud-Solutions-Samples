@@ -70,7 +70,7 @@ def run_migration(num_threads, migration_type, min_date, max_date, min_size, max
 
 
 def generate_config(lyve_id, lyve_secret, lyve_bucket, aws_id, aws_secret, aws_bucket):
-    global config, config_label
+    global config, config_label, lyve_client, aws_client, aws_buckets, lyve_buckets
     top = Toplevel(m)
     top.geometry("400x280")
     top.title("Generated Configuration")
@@ -81,6 +81,22 @@ def generate_config(lyve_id, lyve_secret, lyve_bucket, aws_id, aws_secret, aws_b
     config["aws"]["params"]["aws_access_key_id"] = aws_id.get()
     config["aws"]["params"]["aws_secret_access_key"] = aws_secret.get()
     config["aws"]["bucket_name"] = aws_bucket.get()
+    if lyve_id.get() and lyve_secret.get():
+        lyve_client = generate_client(config["lyve"]["params"])
+        lyve_buckets = [
+            bucket["Name"] for bucket in lyve_client.list_buckets()["Buckets"]
+        ]
+        drop = OptionMenu(m, lyve_bucket, *lyve_buckets)
+        drop.grid(row=4, column=2)
+        lyve_bucket.set(lyve_buckets[0])
+    if aws_id.get() and aws_secret.get():
+        aws_client = generate_client(config["aws"]["params"])
+        aws_buckets = [
+            bucket["Name"] for bucket in lyve_client.list_buckets()["Buckets"]
+        ]
+        drop1 = OptionMenu(m, aws_bucket, *aws_buckets)
+        drop1.grid(row=4, column=4)
+        lyve_bucket.set(lyve_buckets[0])
 
     Label(top, text=json.dumps(config, indent=2), justify=LEFT).pack()
     if lyve_id and lyve_secret and lyve_bucket and aws_id and aws_secret and aws_bucket:
@@ -145,17 +161,13 @@ if __name__ == "__main__":
     # Row 4
     Label(m, text="Lyve Cloud Bucket to Transfer:").grid(row=4, column=1)
     lyve_bucket = StringVar()
-    lyve_client = generate_client(config["lyve"]["params"])
-    lyve_buckets = [bucket["Name"] for bucket in lyve_client.list_buckets()["Buckets"]]
-    lyve_bucket.set(lyve_buckets[0])
+    lyve_buckets = [""]
     drop = OptionMenu(m, lyve_bucket, *lyve_buckets)
     drop.grid(row=4, column=2)
 
     Label(m, text="AWS Bucket to Transfer:").grid(row=4, column=3)
     aws_bucket = StringVar()
-    aws_client = generate_client(config["aws"]["params"])
-    aws_buckets = [bucket["Name"] for bucket in aws_client.list_buckets()["Buckets"]]
-    aws_bucket.set(aws_buckets[0])
+    aws_buckets = [""]
     drop1 = OptionMenu(m, aws_bucket, *aws_buckets)
     drop1.grid(row=4, column=4)
 

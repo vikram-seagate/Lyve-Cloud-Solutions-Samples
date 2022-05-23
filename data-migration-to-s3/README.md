@@ -56,6 +56,13 @@ Here's what you'll need:
 
 1. Install all required packages: `pip3 install -r requirements.txt`.
 2. Run `python3 engine.py` to pull up the GUI.
+3. Fill in `Lyve Cloud Access Key ID`, `Lyve Cloud Secret Access Key`, `AWS Access Key ID` and `AWS Secret Access Key` with your credentials.
+4. Click `Generate Config File` - now, the dropdown for buckets should be populated.
+5. Choose `Lyve Cloud Bucket to Transfer` or `AWS Bucket to Transfer`.
+6. Change the number of threads (int), and indicate migration type (AWS to Lyve or vice versa).
+7. Click `Generate Config File` again.
+8. If necessary, include the filters for `Min Date`, `Max Date`, `Min Size` and `Max Size`.
+9. Click `Migrate Data` and wait for the data to migrate.
 
 ## Results
 
@@ -74,9 +81,10 @@ This section will describe the representation of each of the folders or files in
 |-README.md
 |-engine.py
 |-requirements.txt
+|-engine.exe
 ```
 
-The main logic is present in the `engine.py` file. In the future, the functions will be decoupled for easier readability and extensibility.
+The main logic is present in the `engine.py` file. In the future, the functions will be decoupled for easier readability and extensibility. `engine.exe` is an executable created based on `engine.py` using `pyinstaller`.
 
 ### `/images`
 
