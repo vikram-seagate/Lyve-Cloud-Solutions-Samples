@@ -1,61 +1,55 @@
-# Integration Solution Subject
+# CSTOR S3 Data Migration
 
-[Video Link](your-link)
+[Video Link](https://4pqfyjuvjh.vmaker.com/record/7cYOqhUSba0EjQSU)
 
 ## Introduction
-Write a subject introduction for the integration solution. 
+CSTOR S3 Data Migration solution consists of a dashboard frontend, webserver backend by Django and background workers powered by Dramatiq.
+
 
 ## Requirements
-Details of your environment: operating system, versions, installations to be performed for the integration solution, etc.
+
+OS: Ubuntu 20.04 and above
+
+Please see the `README.rst` in the `core` and `webapp` folders respectively.
 
 ## Known Limitations 
-Please describe know limitations in the submitted integration solution.
+- During the demo, we are running the application and workers on a single host on Digitalocean where network I/O is the bottleneck.
+   - In future, we should run the workers across different machines deal with the network bottleneck.
+- Task retries and error handling needs to be more robust
 
 ##### Key areas to address during the challenge
 * Security
+    - AWS Access Key and Secret Key are both stored in AWS Secrets Manager
+    - Credentials to access AWS Secrets Manager are read from the environment.
 * Performance
+    - Each worker is run with 4 processes and 10 greenlets for a total of 40 parallel task handlers.
 * Resiliency 
+    - Each migration task has a built-in auto-retry mechanism if there are errors during the download / upload phase
+       - It will retry up to 2 times before being left in the Fail Queue
+   - For other errors, the task will retry itself with increasing gaps between retries
 * Scalability
+   - Workers can be distributed across different machines and connect to the same Redis instance
+      - Each worker needs to access the migration cache at the same NFS dir / EFS volume for consistency.
+   - For large files, every 100mb spawns 2 worker sub-threads up to a maximum of 30
+      - Because the transfer process is lightweight, there can be hundreds of sub-threads without issue
+      - Usually, network I/O is the bottleneck
 * Recovery
+   - Workers can fail / error-out at any point and another worker will pick up the remaining tasks
+   - Each task "packet" is about 200mb in size and can consist of multiple files.
+   - File status updates like completion and errors are committed in a single atomic transaction so that migration data is consistent.
 
 ## Running Steps
-**Step 1:** Get your Lyve Cloud bucket credentials.   
-Here's what you'll need:
-* Access Key
-* Secret key
-* Endpoint URL
 
-**Step 2:** 
-Complete the following steps in detail and explain the execution commands. It is recommended to add images that simulate the steps.
+Please see the `README.rst` in the `core` and `webapp` folders respectively.
+
 
 ## Results 
 Show the results using images or a short paragraph.
 
 ## Tested by
-* August 22, 2021: Bari Arviv (bari.arviv@seagate.com) on Ubuntu 20.4
-* month day, year: full_name (email) on your_environment
 
-## **Note:** All files should be uploaded (all the files you used for the integration solution) under one folder, including the README.md file. 
-### Project Structure
+### `/core`
+This folder contains all the cstor-s3 core libraries and is responsible for worker tasks; spawning worker process, updating dashboard API
 
-This section will describe the representation of each of the folders or files in the structure.
-```
-.
-├── README.md
-├── code
-│   └── <script-name>
-├── documentation
-│   └── demo.mp4
-│   └── introduction.pptx
-└── images
-    └── <image-name>
-```
-
-### `/code`
-This folder contains all the code files.
-
-### `/documentation`
-This folder contains the demo video and presentation file.
-
-### `/images`
-This folder contains all the images.
+### `/webapp`
+This folder contains the frontend and backend for the web application.
