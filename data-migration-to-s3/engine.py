@@ -3,8 +3,13 @@ import boto3
 import json
 from tkinter import *
 import tkinter as tk
+from tkcalendar import Calendar, DateEntry
 import time
 import multiprocessing.dummy as mp
+from datetime import datetime
+import pytz
+
+utc = pytz.utc
 
 
 def generate_client(params):
@@ -19,25 +24,41 @@ def load_config():
     return config
 
 
-def run_migration(num_threads, migrate_from="aws", send_to="client"):
+def run_migration(num_threads, migration_type, min_date, max_date, min_size, max_size):
     global config, migration_label
+
+    if migration_type == "AWS to Lyve":
+        migrate_from = "aws"
+        send_to = "lyve"
+    else:
+        migrate_from = "lyve"
+        send_to = "aws"
+
+    min_date = utc.localize(datetime.strptime(min_date, "%m/%d/%y"))
+    max_date = utc.localize(datetime.strptime(max_date, "%m/%d/%y"))
 
     def update(o):
         print(f"Downloading {o['Key']}...")
-        data = aws_client.get_object(Bucket=bucket_from, Key=o["Key"])
-        lyve_client.upload_fileobj(data["Body"], bucket_to, o["Key"])
+        data = from_client.get_object(Bucket=bucket_from, Key=o["Key"])
+        if min_size <= int(data["ContentLength"]) / 1000 <= max_size:
+            print("Out of size range!")
+            return
+        if min_date <= data["LastModified"] <= max_date:
+            print("Out of date range!")
+            return
+        to_client.upload_fileobj(data["Body"], bucket_to, o["Key"])
 
     top_logs = Toplevel(m)
     lab = Label(top_logs)
     lab.pack()
 
-    aws_client = generate_client(config["aws"]["params"])
-    lyve_client = generate_client(config["lyve"]["params"])
+    from_client = generate_client(config[migrate_from]["params"])
+    to_client = generate_client(config[send_to]["params"])
 
-    bucket_from = config["aws"]["bucket_name"]
-    bucket_to = config["lyve"]["bucket_name"]
+    bucket_from = config[migrate_from]["bucket_name"]
+    bucket_to = config[send_to]["bucket_name"]
 
-    bucket_from_objects = aws_client.list_objects_v2(Bucket=bucket_from)
+    bucket_from_objects = from_client.list_objects_v2(Bucket=bucket_from)
     num_objects = len(bucket_from_objects["Contents"])
 
     p = mp.Pool(num_threads)
@@ -78,7 +99,7 @@ def open_popup():
 
 if __name__ == "__main__":
     m = Tk()
-    m.geometry("1000x200")
+    m.geometry("700x410")
     m.title("AWS S3 <> Lyve Cloud Migration Solution")
 
     config = {
@@ -102,7 +123,7 @@ if __name__ == "__main__":
     }
 
     # Row 1
-    Label(m, text="Configuration").grid(row=1, column=1)
+    Label(m, text="---Configuration---").grid(row=1, column=1)
 
     # Row 2
     Label(m, text="Lyve Cloud Access Key ID:", width=20).grid(row=2, column=1)
@@ -127,6 +148,7 @@ if __name__ == "__main__":
     lyve_bucket = StringVar()
     lyve_client = generate_client(config["lyve"]["params"])
     lyve_buckets = [bucket["Name"] for bucket in lyve_client.list_buckets()["Buckets"]]
+    lyve_bucket.set(lyve_buckets[0])
     drop = OptionMenu(m, lyve_bucket, *lyve_buckets)
     drop.grid(row=4, column=2)
 
@@ -134,13 +156,21 @@ if __name__ == "__main__":
     aws_bucket = StringVar()
     aws_client = generate_client(config["aws"]["params"])
     aws_buckets = [bucket["Name"] for bucket in aws_client.list_buckets()["Buckets"]]
-    drop = OptionMenu(m, aws_bucket, *aws_buckets)
-    drop.grid(row=4, column=4)
+    aws_bucket.set(aws_buckets[0])
+    drop1 = OptionMenu(m, aws_bucket, *aws_buckets)
+    drop1.grid(row=4, column=4)
 
     # Row 5
-    Label(m, text="Number of threads").grid(row=5, column=1)
-    num_threads = Entry(m, width=20, textvariable=4)
+    Label(m, text="Number of Threads:").grid(row=5, column=1)
+    num_threads = Entry(m, width=20)
     num_threads.grid(row=5, column=2)
+    num_threads.insert(0, "4")
+
+    Label(m, text="Migration Type:").grid(row=5, column=3)
+    migration_type = StringVar()
+    migration_type.set("AWS to Lyve")
+    drop2 = OptionMenu(m, migration_type, *["AWS to Lyve", "Lyve to AWS"])
+    drop2.grid(row=5, column=4)
 
     # Row 6
     Button(
@@ -153,16 +183,51 @@ if __name__ == "__main__":
     config_label = Label(m, text="Please fill out all the fields.")
     config_label.grid(row=6, column=2)
 
-    # Row 7
-    Button(
-        m,
-        text="Migrate Data (AWS -> S3)",
-        command=lambda: run_migration(int(num_threads.get())),
-    ).grid(row=7, column=1)
-    migration_label = Label(m, text="", justify=LEFT)
-    migration_label.grid(row=7, column=2)
+    Label(m, text="").grid(row=7, column=1)
 
     # Row 8
-    Button(m, text="Quit Application", command=m.quit).grid(row=8, column=1)
+    Label(m, text="---Filters---").grid(row=8, column=1)
+
+    # Row 9
+    Label(m, text="Min Date:").grid(row=9, column=1)
+    min_date = DateEntry(m, width=16, background="magenta3", foreground="white", bd=2)
+    min_date.grid(row=9, column=2)
+
+    Label(m, text="Max Date:").grid(row=9, column=3)
+    max_date = DateEntry(m, width=16, background="magenta3", foreground="white", bd=2)
+    print(max_date.get())
+    max_date.grid(row=9, column=4)
+
+    # Row 10
+    Label(m, text="Max Size (in KB):").grid(row=10, column=1)
+    max_size = Entry(m, width=20)
+    max_size.grid(row=10, column=2)
+    max_size.insert(0, "0")
+
+    Label(m, text="Min Size (in KB):").grid(row=10, column=3)
+    min_size = Entry(m, width=20)
+    min_size.grid(row=10, column=4)
+    min_size.insert(0, "1000000")
+
+    Label(m, text="").grid(row=11, column=1)
+
+    # Row 12
+    Button(
+        m,
+        text="Migrate Data",
+        command=lambda: run_migration(
+            int(num_threads.get()),
+            migration_type.get(),
+            min_date.get(),
+            max_date.get(),
+            int(min_size.get()),
+            int(max_size.get()),
+        ),
+    ).grid(row=12, column=1)
+    migration_label = Label(m, text="", justify=LEFT)
+    migration_label.grid(row=12, column=2)
+
+    # Row 13
+    Button(m, text="Quit Application", command=m.quit).grid(row=13, column=1)
 
     m.mainloop()
