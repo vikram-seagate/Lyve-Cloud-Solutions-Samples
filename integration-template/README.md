@@ -64,6 +64,23 @@ CSTOR S3 Data Migration solution consists of a dashboard frontend, webserver bac
 
 ## Running Steps
 
+Videos are available for the setup
+
+Part 1: Secrets Manager, Docker, Redis setup
+[Part 1](https://4pqfyjuvjh.vmaker.com/record/Zx0YWD4uH6nFwUTX/)
+
+Part 2: Python, Django Setup
+[Part 2](https://4pqfyjuvjh.vmaker.com/record/KwlJUP0ZphoqnVIz/)
+
+Part 3: Dramatiq Backend Worker and Frontend Setup
+
+[Part 3](https://4pqfyjuvjh.vmaker.com/record/0f0gsAWJXuVp7eZO/)
+
+Part 4: New user account setup and new migration demo
+
+[Part 4](https://4pqfyjuvjh.vmaker.com/record/nUVomsnKdq52Mwi2)
+
+
 ### Step 1. Retrieve required credentials for AWS and Lyvecloud S3 Buckets
 
 Credentials must have the required permissions and endpoints as per the **Credentials** section above.
@@ -75,27 +92,27 @@ Credentials must have the required permissions and endpoints as per the **Creden
 
 2. Click on `Users` on the left sidebar and then `Add User`
 
-![AWS_2](https://github.com/codewitholi/lyc-hackathon-pages/blob/main/aws_2.PNG)
+![AWS_2](https://github.com/codewitholi/lyc-hackathon-pages/raw/main/aws_2.PNG)
 
-![AWS_3](https://github.com/codewitholi/lyc-hackathon-pages/blob/main/aws_3.PNG)
+![AWS_3](https://github.com/codewitholi/lyc-hackathon-pages/raw/main/aws_3.PNG)
 
 3. Fill in the username and select `AccessKey - Programmatic Access` for the AWS Access Type
 
-![AWS_4](https://github.com/codewitholi/lyc-hackathon-pages/blob/main/aws_4.PNG)
+![AWS_4](https://github.com/codewitholi/lyc-hackathon-pages/raw/main/aws_4.PNG)
 
 4. On Set Permissions, Click `Attach Existing Policies Directly` and tick `SecretsManagerReadWrite`
 
-![AWS_5](https://github.com/codewitholi/lyc-hackathon-pages/blob/main/aws_5.PNG)
+![AWS_5](https://github.com/codewitholi/lyc-hackathon-pages/raw/main/aws_5.PNG)
 
-![AWS_6](https://github.com/codewitholi/lyc-hackathon-pages/blob/main/aws_6.PNG)
+![AWS_6](https://github.com/codewitholi/lyc-hackathon-pages/raw/main/aws_6.PNG)
 
 5. Review the created details and click on `Create user` button
 
-![AWS_7](https://github.com/codewitholi/lyc-hackathon-pages/blob/main/aws_7.PNG)
+![AWS_7](https://github.com/codewitholi/lyc-hackathon-pages/raw/main/aws_7.PNG)
 
 6. Save the generated `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
 
-![AWS_8](https://github.com/codewitholi/lyc-hackathon-pages/blob/main/aws_8_censored.jpg)
+![AWS_8](https://github.com/codewitholi/lyc-hackathon-pages/raw/main/aws_8_censored.jpg)
 
 
 Please note that you will not be able to see the secret key again after leaving the page.
