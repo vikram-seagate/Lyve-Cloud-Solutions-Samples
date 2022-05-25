@@ -1,0 +1,373 @@
+const { exit } = require("process");
+const fs = require("fs");
+const sqlite3 = require("sqlite3");
+const storageConnector = require("./storageConnector");
+const { imageMap, audioMap, videoMap } = require("./MIMEMap");
+
+// Instantiate the SQLite DB connection
+
+/**
+ * Creates new tables for the SQLite database.
+ *
+ * @param {Database} newDb The database to initialize and set up.
+ *
+ * @throws Error in creating new tables as the tables already exist.
+ */
+function createTables(newDb) {
+    return newDb.exec(
+    `
+    CREATE TABLE bucket (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        name TEXT NOT NULL UNIQUE,
+        path TEXT NOT NULL UNIQUE
+    );
+
+    CREATE TABLE media (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        name TEXT NOT NULL,
+        path TEXT NOT NULL,
+        size INTEGER NOT NULL,
+        extension TEXT NOT NULL,
+        count INTEGER NOT NULL,
+        bucket_id INTEGER NOT NULL,
+        FOREIGN KEY(bucket_id) REFERENCES bucket(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE local_store (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        name TEXT NOT NULL UNIQUE,
+        chunk_size INTEGER NOT NULL,
+        media_id INTEGER NOT NULL,
+        FOREIGN KEY(media_id) REFERENCES media(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE queue (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        media_id INTEGER NOT NULL,
+        is_image INTEGER NOT NULL, 
+        size INTEGER NOT NULL
+    )
+    `,
+        (err) => {
+            if (err) {
+                console.error(err);
+            }
+        }
+    );
+}
+
+let db = new sqlite3.Database(
+    "server/data/faststream.db",
+    sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+    (err) => {
+        if (err && err.code === "SQLITE_CANTOPEN") {
+            console.log(
+                "Error in SQL database: " +
+                    err +
+                    "\nEnsure correct DB path specified. "
+            );
+            exit(1);
+        } else if (err) {
+            console.log("Error in SQL database: " + err);
+            exit(1);
+        }
+    }
+);
+
+createTables(db);
+
+// All operations of the worker that updates the local cache and DB at set intervals below
+/**
+ * @module updateStore
+ * 
+ * @method update
+ */
+
+/**
+ * Request details of all buckets from Cloud S3. 
+ * 
+ * @throws {Error} Error occurred in retrieving data from Cloud S3. 
+ * 
+ * @returns {Array<Object>} Array of bucket details requested. 
+ */
+function retrieveBuckets() {
+    try {
+        // Retrieve all buckets from Cloud S3
+        let data = await storageConnector.getAllBuckets();
+
+        // Error in retrieval
+        if (data["$metadata"].httpStatusCode !== 200) {
+            console.log("Error in retrieveBuckets");
+            throw new Error("Error in retrieveBuckets");
+        } else {
+            return data.Buckets;
+        }
+    } catch (err) {
+        console.error(err);
+        throw err;
+    }
+}
+
+/**
+ * Updates (deletes and inserts) the current cache's record of the buckets - Sync with Cloud S3. 
+ * 
+ * @param {Array<Object>} buckets Array of objects representing buckets retrieved from Cloud S3.
+ * 
+ * @throws {Error} An error from interfacing with the Cloud S3 or local cache. 
+ * 
+ * @returns {boolean} The success status of the update.
+ */
+function updateBuckets(buckets) {
+    let currentBuckets = new Map();
+    let dbErr; // Error flag
+    // Get currently tracked buckets
+    db.each("SELECT * FROM bucket", (err, row) => {
+        if (err) {
+            console.error(err);
+            dbErr = err;
+        } else {
+            currentBuckets.set(row.name, {
+                name: row.name,
+                path: row.path
+            });
+        }
+    })
+    if (dbErr) {
+        throw dbErr;
+    }
+
+    // Compare and record which buckets to create or delete in local storage
+    let toDelete = [];
+    let toCreate = [];
+    for (let bucket of buckets) {
+        if (currentBuckets.has(bucket.Name)) {
+            currentBuckets.delete(bucket.Name);
+        } else {
+            toCreate.push({
+                name: bucket.Name, 
+                path: bucket.Name
+            })
+        }
+    }
+    for (let key of currentBuckets.keys()) {
+        toDelete.push(currentBuckets.get(key));
+    }
+
+    // Delete buckets
+    for (let bucket of toDelete) {
+        db.run("DELETE FROM bucket WHERE name = $name AND path = $path", {$name: bucket.name, $path: bucket.path}, (err) => {
+            if (err) {
+                console.error(err);
+                dbErr = err;
+            }
+        });
+        if (dbErr) {
+            throw dbErr;
+        }
+        fs.rm(`server/media/${bucket.path.replace(/\//g, '\\/\\')}`, { recursive: true }, (err) => {
+            console.error(err);
+            dbErr = err;
+        });
+        if (dbErr) {
+            throw dbErr;
+        }
+    }
+    // Create buckets
+    for (let bucket of toCreate) {
+        db.run("INSERT INTO bucket WHERE name = $name AND path = $path", {$name: bucket.name, $path: bucket.path}, (err) => {
+            if (err) {
+                console.error(err);
+                dbErr = err;
+            }
+        });
+        if (dbErr) {
+            throw dbErr;
+        }
+        fs.mkdir(`server/media/${bucket.path.replace(/\//g, '\\/\\')}`, { recursive: true }, (err) => {
+            console.error(err);
+            dbErr = err;
+        });
+        if (dbErr) {
+            throw dbErr;
+        }
+    }
+
+    return true;
+}
+/**
+ * Retrieve details of the media under the specified bucket from Cloud S3.
+ * 
+ * @param {string} bucket The name of the bucket to retrieve media details from. 
+ * 
+ * @throws {Error} An error if there was a failure in retrieving media details from S3. 
+ * 
+ * @returns {Array<Object>} An array containing details of the media in the specified bucket. 
+ */
+function retrieveMedia(bucket) {
+    try {
+        // Retrieve all media details under specified bucket from Cloud S3
+        let data = await storageConnector.getAllMedia(bucket);
+
+        // Error in retrieval
+        if (data["$metadata"].httpStatusCode !== 200) {
+            console.log("Error in retrieveMedia");
+            throw new Error("Error in retrieveMedia");
+        } else {
+            return data.Contents;
+        }
+    } catch (err) {
+        console.error(err);
+        throw err;
+    }
+}
+
+/**
+ * A function that helps with removing or extracting the extension from a filename. 
+ * 
+ * @param {string} filename The name of the file whose extension is to be removed. 
+ * @param {boolean} returnExt Whether to return the extension or the name of the file without the extension. 
+ * 
+ * @returns {string} The requested part of the filename. 
+ */
+function removeExt(filename, returnExt = true) {
+    let extIdx = filename.lastIndexOf(".");
+    if (returnExt) {
+        return filename.slice(extIdx + 1);
+    } else {
+        return filename.slice(0, extIdx);
+    }
+}
+
+/**
+ * Updates (deletes and inserts) the current cache's record of the media - Sync with Cloud S3. 
+ * 
+ * @param {string} bucket Name of the bucket whose media detail is to be retrieved from Cloud S3.
+ * @param {Array<Object>} media Array of objects representing media details retrieved from Cloud S3.
+ * 
+ * @throws {Error} An error from interfacing with the Cloud S3 or local cache. 
+ * 
+ * @returns {boolean} The success status of the update.
+ */
+function updateMedia(bucket, media) {
+    let dbErr; // Error flag
+    let bucketId;
+    let bucketPath;
+    // Get target bucket's ID and path
+    db.get("SELECT id FROM bucket WHERE name = $name", {$name: bucket}, (err, row) => {
+        if (err) {
+            console.error(err);
+            dbErr = err;
+        } else if (row) {
+            bucketId = row.id;
+            bucketPath = row.path;
+        } else {
+            let err = new Error("The bucket specified does not exist in local cache. ");
+            console.error(err);
+            dbErr = err;
+        }
+    })
+    if (dbErr) {
+        throw dbErr;
+    }
+    let currentMedia = new Map();
+    // Get currently tracked media
+    db.each("SELECT * FROM media WHERE bucket_id = $bucket_id", {$bucket_id: bucketId}, (err, row) => {
+        if (err) {
+            console.error(err);
+            dbErr = err;
+        } else {
+            currentMedia.set(row.name, {
+                name: row.name,
+                path: row.path, 
+                extension: row.extension, 
+                size: row.size
+            });
+        }
+    })
+    if (dbErr) {
+        throw dbErr;
+    }
+
+    // Compare and record which media is present under the specified bucket
+    let toDelete = [];
+    let toCreate = [];
+    for (let medium of media) {
+        if (currentMedia.has(medium.Key)) {
+            currentMedia.delete(medium.Key);
+        } else {
+            toCreate.push({
+                name: medium.Key, 
+                path: removeExt(medium.Key, returnExt = false), 
+                extension: removeExt(medium.Key),
+                size: medium.Size
+            });
+        }
+    }
+    for (let key of currentMedia.keys()) {
+        toDelete.push(currentMedia.get(key));
+    }
+
+    // Delete media
+    for (let medium of toDelete) {
+        db.run("DELETE FROM media WHERE name = $name AND path = $path AND extension = $extension AND size = $size AND bucket_id = $bucket_id", {$name: medium.name, $path: medium.path, $extension: medium.extension, $size: medium.size, $bucket_id: bucketId}, (err) => {
+            if (err) {
+                console.error(err);
+                dbErr = err;
+            }
+        });
+        if (dbErr) {
+            throw dbErr;
+        }
+        fs.rm(`server/media/${bucketPath.replace(/\//g, '\\/\\')}/${medium.name}`, { force: true, recursive: true }, (err) => {
+            console.error(err);
+            dbErr = err;
+        });
+        if (dbErr) {
+            throw dbErr;
+        }
+    }
+    // Create media
+    for (let bucket of toCreate) {
+        db.run("INSERT INTO bucket WHERE name = $name AND path = $path AND extension = $extension AND size = $size AND count = 0 AND bucket_id = $bucket_id", {$name: medium.name, $path: medium.path, $extension: medium.extension, $size: medium.size, $bucket_id: bucketId}, (err) => {
+            if (err) {
+                console.error(err);
+                dbErr = err;
+            }
+        });
+        if (dbErr) {
+            throw dbErr;
+        }
+    }
+
+    return true;
+}
+
+function computeMediaScores() {
+    let dbErr;
+    let totalCount
+    db.get("SELECT SUM(`count`) as `total_count` FROM media", (err, row) => {
+        if (err) {
+            console.error(err);
+            dbErr = err;
+        } else {
+            totalCount = row.total_count;
+        }
+    });
+    if (dbErr) {
+        throw dbErr;
+    }
+    db.each("SELECT "); // TODO
+}
+
+exports.update = function () {
+    try {
+        const buckets = retrieveBuckets();
+        updateBuckets(buckets);
+        for (let bucket of buckets) {
+            updateMedia(bucket.Name, retrieveMedia(bucket.Name));
+        }
+        downloadMedia(computeMediaScores());
+    } catch (err) {
+        console.error(err);
+    }
+}
