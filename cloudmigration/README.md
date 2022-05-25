@@ -11,8 +11,8 @@ This project is developed for the **data migration and movement** challenge.
 
 ### Installation
 
-- Golang (https://go.dev/doc/install)
-- Node.js and npm (https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+- Golang 1.16 (https://go.dev/doc/install)
+- Node.js v16 and npm v8 (https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 
 ### Usage
 
@@ -34,6 +34,7 @@ This project is developed for the **data migration and movement** challenge.
 4. Open another terminal and start the frontend dev server
 
     ```bash
+    cd frontend/
     npm ci
     # Run frontend dev server
     npm run start
