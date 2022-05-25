@@ -328,7 +328,9 @@ class Bucket(BaseModel):
 
     client_s3: Any = ...  # S3 Client from Session
     name: str = ...  # Name of the S3 Bucket
-    region: str = ""
+    # Bugfix that would enable DigitalOcean and Backblaze to work as endpoints.
+    #region: str = ""
+    region: str = None
 
     def list_objects(
         self,
@@ -467,7 +469,7 @@ class Bucket(BaseModel):
     ) -> any:
         """Upload from temporary file"""
         log_prefix: str = "DEST"
-        tmpfile: any = tempfile.NamedTemporaryFile(delete=False)
+        #tmpfile: any = tempfile.NamedTemporaryFile(delete=False)
         config: any = get_transfer_config(migrate_item.Size)
         dest_key: str = str(migrate_key)
 
@@ -536,7 +538,8 @@ class Bucket(BaseModel):
             migrate_item.Events = [fail_log] + migrate_item.Events
         finally:
             # Cleanup
-            os.remove(tmpfile.name)
+            #os.remove(tmpfile.name)
+            os.remove(migrate_fpath)
 
     def migrate(
         self,

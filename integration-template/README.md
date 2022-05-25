@@ -17,6 +17,22 @@ CSTOR S3 Data Migration solution consists of a dashboard frontend, webserver bac
 - 80GB NVMe SSD
 - 1gb/s Ethernet
 
+
+### Software
+
+- Python 3.10.1
+- Pip 21.2.3
+- Python Global Packages
+   - nox==2022.1.7
+   - poetry==1.1.3
+
+- Nodejs v16.15.0
+- NPM 8.5.5
+- Docker 20.10.5
+- Docker Compose v2.5.0
+- RocksDB Dependencies
+   - sudo apt-get install -y librocksdb-dev liblz4-dev libsnappy-dev
+
 ### Credentials
 
 - Required to have the following for testing and administration purposes
