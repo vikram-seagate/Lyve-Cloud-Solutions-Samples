@@ -2,7 +2,7 @@ const { exit } = require("process");
 const fs = require("fs");
 const sqlite3 = require("sqlite3");
 const storageConnector = require("./storageConnector");
-const { imageMap, audioMap, videoMap } = require("./MIMEMap");
+const { imageMap } = require("./MIMEMap");
 
 // Instantiate the SQLite DB connection
 
@@ -79,18 +79,18 @@ createTables(db);
 // All operations of the worker that updates the local cache and DB at set intervals below
 /**
  * @module updateStore
- * 
+ *
  * @method update
  */
 
 /**
- * Request details of all buckets from Cloud S3. 
- * 
- * @throws {Error} Error occurred in retrieving data from Cloud S3. 
- * 
- * @returns {Array<Object>} Array of bucket details requested. 
+ * Request details of all buckets from Cloud S3.
+ *
+ * @throws {Error} Error occurred in retrieving data from Cloud S3.
+ *
+ * @returns {Array<{ Name: string }>} Array of bucket details requested.
  */
-function retrieveBuckets() {
+async function retrieveBuckets() {
     try {
         // Retrieve all buckets from Cloud S3
         let data = await storageConnector.getAllBuckets();
@@ -109,12 +109,12 @@ function retrieveBuckets() {
 }
 
 /**
- * Updates (deletes and inserts) the current cache's record of the buckets - Sync with Cloud S3. 
- * 
- * @param {Array<Object>} buckets Array of objects representing buckets retrieved from Cloud S3.
- * 
- * @throws {Error} An error from interfacing with the Cloud S3 or local cache. 
- * 
+ * Updates (deletes and inserts) the current cache's record of the buckets - Sync with Cloud S3.
+ *
+ * @param {Array<{ Name: string }>} buckets Array of objects representing buckets retrieved from Cloud S3.
+ *
+ * @throws {Error} An error from interfacing with the Cloud S3 or local cache.
+ *
  * @returns {boolean} The success status of the update.
  */
 function updateBuckets(buckets) {
@@ -128,10 +128,10 @@ function updateBuckets(buckets) {
         } else {
             currentBuckets.set(row.name, {
                 name: row.name,
-                path: row.path
+                path: row.path,
             });
         }
-    })
+    });
     if (dbErr) {
         throw dbErr;
     }
@@ -144,9 +144,9 @@ function updateBuckets(buckets) {
             currentBuckets.delete(bucket.Name);
         } else {
             toCreate.push({
-                name: bucket.Name, 
-                path: bucket.Name
-            })
+                name: bucket.Name,
+                path: bucket.Name,
+            });
         }
     }
     for (let key of currentBuckets.keys()) {
@@ -155,38 +155,54 @@ function updateBuckets(buckets) {
 
     // Delete buckets
     for (let bucket of toDelete) {
-        db.run("DELETE FROM bucket WHERE name = $name AND path = $path", {$name: bucket.name, $path: bucket.path}, (err) => {
-            if (err) {
-                console.error(err);
-                dbErr = err;
+        db.run(
+            "DELETE FROM bucket WHERE name = $name AND path = $path",
+            { $name: bucket.name, $path: bucket.path },
+            (err) => {
+                if (err) {
+                    console.error(err);
+                    dbErr = err;
+                }
             }
-        });
+        );
         if (dbErr) {
             throw dbErr;
         }
-        fs.rm(`server/media/${bucket.path.replace(/\//g, '\\/\\')}`, { recursive: true }, (err) => {
-            console.error(err);
-            dbErr = err;
-        });
+        fs.rm(
+            `server/media/${bucket.path.replace(/\//g, "\\/\\")}`,
+            { recursive: true },
+            (err) => {
+                console.error(err);
+                dbErr = err;
+            }
+        );
         if (dbErr) {
             throw dbErr;
         }
     }
     // Create buckets
     for (let bucket of toCreate) {
-        db.run("INSERT INTO bucket WHERE name = $name AND path = $path", {$name: bucket.name, $path: bucket.path}, (err) => {
-            if (err) {
-                console.error(err);
-                dbErr = err;
+        db.run(
+            "INSERT INTO bucket WHERE name = $name AND path = $path",
+            { $name: bucket.name, $path: bucket.path },
+            (err) => {
+                if (err) {
+                    console.error(err);
+                    dbErr = err;
+                }
             }
-        });
+        );
         if (dbErr) {
             throw dbErr;
         }
-        fs.mkdir(`server/media/${bucket.path.replace(/\//g, '\\/\\')}`, { recursive: true }, (err) => {
-            console.error(err);
-            dbErr = err;
-        });
+        fs.mkdir(
+            `server/media/${bucket.path.replace(/\//g, "\\/\\")}`,
+            { recursive: true },
+            (err) => {
+                console.error(err);
+                dbErr = err;
+            }
+        );
         if (dbErr) {
             throw dbErr;
         }
@@ -196,14 +212,14 @@ function updateBuckets(buckets) {
 }
 /**
  * Retrieve details of the media under the specified bucket from Cloud S3.
- * 
- * @param {string} bucket The name of the bucket to retrieve media details from. 
- * 
- * @throws {Error} An error if there was a failure in retrieving media details from S3. 
- * 
- * @returns {Array<Object>} An array containing details of the media in the specified bucket. 
+ *
+ * @param {string} bucket The name of the bucket to retrieve media details from.
+ *
+ * @throws {Error} An error if there was a failure in retrieving media details from S3.
+ *
+ * @returns {Array<{ Key: string, Size: number }>} An array containing details of the media in the specified bucket.
  */
-function retrieveMedia(bucket) {
+async function retrieveMedia(bucket) {
     try {
         // Retrieve all media details under specified bucket from Cloud S3
         let data = await storageConnector.getAllMedia(bucket);
@@ -222,12 +238,12 @@ function retrieveMedia(bucket) {
 }
 
 /**
- * A function that helps with removing or extracting the extension from a filename. 
- * 
- * @param {string} filename The name of the file whose extension is to be removed. 
- * @param {boolean} returnExt Whether to return the extension or the name of the file without the extension. 
- * 
- * @returns {string} The requested part of the filename. 
+ * A function that helps with removing or extracting the extension from a filename.
+ *
+ * @param {string} filename The name of the file whose extension is to be removed.
+ * @param {boolean} returnExt Whether to return the extension or the name of the file without the extension.
+ *
+ * @returns {string} The requested part of the filename.
  */
 function removeExt(filename, returnExt = true) {
     let extIdx = filename.lastIndexOf(".");
@@ -239,13 +255,13 @@ function removeExt(filename, returnExt = true) {
 }
 
 /**
- * Updates (deletes and inserts) the current cache's record of the media - Sync with Cloud S3. 
- * 
+ * Updates (deletes and inserts) the current cache's record of the media - Sync with Cloud S3.
+ *
  * @param {string} bucket Name of the bucket whose media detail is to be retrieved from Cloud S3.
- * @param {Array<Object>} media Array of objects representing media details retrieved from Cloud S3.
- * 
- * @throws {Error} An error from interfacing with the Cloud S3 or local cache. 
- * 
+ * @param {Array<{ Key: string, Size: number }>} media Array of objects representing media details retrieved from Cloud S3.
+ *
+ * @throws {Error} An error from interfacing with the Cloud S3 or local cache.
+ *
  * @returns {boolean} The success status of the update.
  */
 function updateMedia(bucket, media) {
@@ -253,37 +269,47 @@ function updateMedia(bucket, media) {
     let bucketId;
     let bucketPath;
     // Get target bucket's ID and path
-    db.get("SELECT id FROM bucket WHERE name = $name", {$name: bucket}, (err, row) => {
-        if (err) {
-            console.error(err);
-            dbErr = err;
-        } else if (row) {
-            bucketId = row.id;
-            bucketPath = row.path;
-        } else {
-            let err = new Error("The bucket specified does not exist in local cache. ");
-            console.error(err);
-            dbErr = err;
+    db.get(
+        "SELECT id FROM bucket WHERE name = $name",
+        { $name: bucket },
+        (err, row) => {
+            if (err) {
+                console.error(err);
+                dbErr = err;
+            } else if (row) {
+                bucketId = row.id;
+                bucketPath = row.path;
+            } else {
+                let err = new Error(
+                    "The bucket specified does not exist in local cache. "
+                );
+                console.error(err);
+                dbErr = err;
+            }
         }
-    })
+    );
     if (dbErr) {
         throw dbErr;
     }
     let currentMedia = new Map();
     // Get currently tracked media
-    db.each("SELECT * FROM media WHERE bucket_id = $bucket_id", {$bucket_id: bucketId}, (err, row) => {
-        if (err) {
-            console.error(err);
-            dbErr = err;
-        } else {
-            currentMedia.set(row.name, {
-                name: row.name,
-                path: row.path, 
-                extension: row.extension, 
-                size: row.size
-            });
+    db.each(
+        "SELECT * FROM media WHERE bucket_id = $bucket_id",
+        { $bucket_id: bucketId },
+        (err, row) => {
+            if (err) {
+                console.error(err);
+                dbErr = err;
+            } else {
+                currentMedia.set(row.name, {
+                    name: row.name,
+                    path: row.path,
+                    extension: row.extension,
+                    size: row.size,
+                });
+            }
         }
-    })
+    );
     if (dbErr) {
         throw dbErr;
     }
@@ -296,10 +322,10 @@ function updateMedia(bucket, media) {
             currentMedia.delete(medium.Key);
         } else {
             toCreate.push({
-                name: medium.Key, 
-                path: removeExt(medium.Key, returnExt = false), 
+                name: medium.Key,
+                path: removeExt(medium.Key, (returnExt = false)),
                 extension: removeExt(medium.Key),
-                size: medium.Size
+                size: medium.Size,
             });
         }
     }
@@ -309,31 +335,55 @@ function updateMedia(bucket, media) {
 
     // Delete media
     for (let medium of toDelete) {
-        db.run("DELETE FROM media WHERE name = $name AND path = $path AND extension = $extension AND size = $size AND bucket_id = $bucket_id", {$name: medium.name, $path: medium.path, $extension: medium.extension, $size: medium.size, $bucket_id: bucketId}, (err) => {
-            if (err) {
-                console.error(err);
-                dbErr = err;
+        db.run(
+            "DELETE FROM media WHERE name = $name AND path = $path AND extension = $extension AND size = $size AND bucket_id = $bucket_id",
+            {
+                $name: medium.name,
+                $path: medium.path,
+                $extension: medium.extension,
+                $size: medium.size,
+                $bucket_id: bucketId,
+            },
+            (err) => {
+                if (err) {
+                    console.error(err);
+                    dbErr = err;
+                }
             }
-        });
+        );
         if (dbErr) {
             throw dbErr;
         }
-        fs.rm(`server/media/${bucketPath.replace(/\//g, '\\/\\')}/${medium.name}`, { force: true, recursive: true }, (err) => {
-            console.error(err);
-            dbErr = err;
-        });
+        fs.rm(
+            `server/media/${bucketPath.replace(/\//g, "\\/\\")}/${medium.name}`,
+            { force: true, recursive: true },
+            (err) => {
+                console.error(err);
+                dbErr = err;
+            }
+        );
         if (dbErr) {
             throw dbErr;
         }
     }
     // Create media
-    for (let bucket of toCreate) {
-        db.run("INSERT INTO bucket WHERE name = $name AND path = $path AND extension = $extension AND size = $size AND count = 0 AND bucket_id = $bucket_id", {$name: medium.name, $path: medium.path, $extension: medium.extension, $size: medium.size, $bucket_id: bucketId}, (err) => {
-            if (err) {
-                console.error(err);
-                dbErr = err;
+    for (let medium of toCreate) {
+        db.run(
+            "INSERT INTO bucket WHERE name = $name AND path = $path AND extension = $extension AND size = $size AND count = 0 AND bucket_id = $bucket_id",
+            {
+                $name: medium.name,
+                $path: medium.path,
+                $extension: medium.extension,
+                $size: medium.size,
+                $bucket_id: bucketId,
+            },
+            (err) => {
+                if (err) {
+                    console.error(err);
+                    dbErr = err;
+                }
             }
-        });
+        );
         if (dbErr) {
             throw dbErr;
         }
@@ -342,9 +392,16 @@ function updateMedia(bucket, media) {
     return true;
 }
 
+/**
+ * Calculates the popularity score of each media and returns an array containing media shortlisted for caching,
+ * along with their details and scores.
+ *
+ * @returns {Array<{ id: number, name: string, path: string, extension: string, size: number, bucket_id: number, score: number }>}
+ */
 function computeMediaScores() {
     let dbErr;
-    let totalCount
+    let totalCount;
+    // Get the total number of views so far
     db.get("SELECT SUM(`count`) as `total_count` FROM media", (err, row) => {
         if (err) {
             console.error(err);
@@ -356,18 +413,112 @@ function computeMediaScores() {
     if (dbErr) {
         throw dbErr;
     }
-    db.each("SELECT "); // TODO
+    // Get the available media's details and their scores
+    const mediaScores = [];
+    db.each(
+        "SELECT id, name, path, extension, size, bucket_id, (count / CAST($total_count as REAL)) AS score FROM media ORDER BY score DESC",
+        { $total_count: totalCount },
+        (err, row) => {
+            if (err) {
+                console.error(err);
+                dbErr = err;
+            } else {
+                mediaScores.append({
+                    id: row.id,
+                    name: row.name,
+                    path: row.path,
+                    extension: row.extension,
+                    size: row.size,
+                    bucket_id: row.bucket_id,
+                    score: row.score,
+                });
+            }
+        }
+    );
+    if (dbErr) {
+        throw dbErr;
+    }
+    // Filter for the media covering 80% of consumer usage
+    let total = 0;
+    let results;
+    for (let i = 0; i < mediaScores.length; i++) {
+        total += mediaScores[0].score;
+        if (total > 0.8) {
+            results = mediaScores.slice(0, Math.min(i + 1, mediaScores.length));
+            break;
+        }
+    }
+    // Returns list of media to store in local cache
+    if (results) {
+        return results;
+    } else {
+        return mediaScores;
+    }
+}
+
+/**
+ * Decides the percentage of a fully popular file to cache.
+ *
+ * @param {number} z The size of the file to cache.
+ *
+ * @returns {number} The percentage of the file to cache at full popularity.
+ */
+function adjustedSigmoid(z, scaleFactor) {
+    z = ((z - scaleFactor) * 6) / scaleFactor; // Rescale the domain to [0, 2*scaleFactor]
+    return Math.exp(z) / (Math.exp(z) + 1);
+}
+
+/**
+ * Returns the appropriate percentage to cache a file with according to its popularity and file size.
+ *
+ * @param {number} size The size of the file to cache.
+ * @param {number} score The score allocated to the media file according to consumer consumption rates.
+ *
+ * @returns {number} The percentage of the file to cache locally.
+ */
+function scoringAlgo(size, score) {
+    const scaleFactor = 500000000; // Scale factor such that around 50% of a size 5*E8 file is cached at full popularity
+    if (size < 0) {
+        size = 0;
+    } else if (size > 2 * scaleFactor) {
+        size = 2 * scaleFactor;
+    }
+    return score * adjustedSigmoid(size, scaleFactor); // `score` indicates popularity;
 }
 
 exports.update = function () {
     try {
-        const buckets = retrieveBuckets();
+        let dbErr;
+        let buckets;
+        retrieveBuckets()
+            .then((data) => {
+                buckets = data;
+            })
+            .catch((err) => {
+                console.error(err);
+                dbErr = err;
+            });
+        if (dbErr) {
+            throw dbErr;
+        }
         updateBuckets(buckets);
         for (let bucket of buckets) {
-            updateMedia(bucket.Name, retrieveMedia(bucket.Name));
+            let mediaList;
+            retrieveMedia(bucket.Name)
+                .then((data) => {
+                    mediaList = data;
+                })
+                .catch((err) => {
+                    console.error(err);
+                    dbErr = err;
+                });
+            if (dbErr) {
+                throw dbErr;
+            }
+            updateMedia(bucket.Name, mediaList);
         }
         downloadMedia(computeMediaScores());
     } catch (err) {
         console.error(err);
     }
-}
+};
