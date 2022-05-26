@@ -80,6 +80,8 @@ Here's what you'll need:
 
 ## Tested by:
 
+- Callista Chang (changcallista@gmail.com)
+
 ### Project Structure
 
 This section will describe the representation of each of the folders or files in the structure.

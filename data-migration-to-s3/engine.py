@@ -69,8 +69,16 @@ def run_migration(num_threads, migration_type, min_date, max_date, min_size, max
     migration_label.configure(text=f"Transfer successful! {num_objects}/{num_objects}")
 
 
-def generate_config(lyve_id, lyve_secret, lyve_bucket, aws_id, aws_secret, aws_bucket):
-    global config, config_label, lyve_client, aws_client, aws_buckets, lyve_buckets
+def generate_config(
+    lyve_id,
+    lyve_secret,
+    lyve_bucket,
+    aws_id,
+    aws_secret,
+    aws_bucket,
+    aws_region,
+    lyve_region,
+):
     top = Toplevel(m)
     top.geometry("400x280")
     top.title("Generated Configuration")
@@ -78,16 +86,21 @@ def generate_config(lyve_id, lyve_secret, lyve_bucket, aws_id, aws_secret, aws_b
     config["lyve"]["params"]["aws_access_key_id"] = lyve_id.get()
     config["lyve"]["params"]["aws_secret_access_key"] = lyve_secret.get()
     config["lyve"]["bucket_name"] = lyve_bucket.get()
+    config["lyve"]["params"]["region_name"] = lyve_region.get()
+    config["lyve"]["params"][
+        "endpoint_url"
+    ] = f"https://s3.{lyve_region.get()}.lyvecloud.seagate.com"
+    config["aws"]["bucket_name"] = aws_bucket.get()
     config["aws"]["params"]["aws_access_key_id"] = aws_id.get()
     config["aws"]["params"]["aws_secret_access_key"] = aws_secret.get()
-    config["aws"]["bucket_name"] = aws_bucket.get()
+    config["aws"]["params"]["region_name"] = aws_region.get()
     if lyve_id.get() and lyve_secret.get():
         lyve_client = generate_client(config["lyve"]["params"])
         lyve_buckets = [
             bucket["Name"] for bucket in lyve_client.list_buckets()["Buckets"]
         ]
         drop = OptionMenu(m, lyve_bucket, *lyve_buckets)
-        drop.grid(row=4, column=2)
+        drop.grid(row=row, column=2)
         lyve_bucket.set(lyve_buckets[0])
     if aws_id.get() and aws_secret.get():
         aws_client = generate_client(config["aws"]["params"])
@@ -95,8 +108,8 @@ def generate_config(lyve_id, lyve_secret, lyve_bucket, aws_id, aws_secret, aws_b
             bucket["Name"] for bucket in aws_client.list_buckets()["Buckets"]
         ]
         drop1 = OptionMenu(m, aws_bucket, *aws_buckets)
-        drop1.grid(row=4, column=4)
-        lyve_bucket.set(lyve_buckets[0])
+        drop1.grid(row=row, column=4)
+        aws_bucket.set(aws_buckets[0])
 
     Label(top, text=json.dumps(config, indent=2), justify=LEFT).pack()
     if lyve_id and lyve_secret and lyve_bucket and aws_id and aws_secret and aws_bucket:
@@ -123,8 +136,8 @@ if __name__ == "__main__":
             "params": {
                 "aws_access_key_id": "",
                 "aws_secret_access_key": "",
-                "region_name": "ap-southeast-1",
-                "endpoint_url": "https://s3.ap-southeast-1.lyvecloud.seagate.com",
+                "region_name": "",
+                "endpoint_url": "",  # "https://s3.ap-southeast-1.lyvecloud.seagate.com",
             },
             "bucket_name": "",
         },
@@ -132,96 +145,115 @@ if __name__ == "__main__":
             "params": {
                 "aws_access_key_id": "",
                 "aws_secret_access_key": "",
-                "region_name": "us-east-1",
+                "region_name": "",
             },
             "bucket_name": "",
         },
     }
-    # Row 1
-    Label(m, text="---Configuration---").grid(row=1, column=1)
+    row = 1
+    Label(m, text="---Configuration---").grid(row=row, column=1)
 
-    # Row 2
-    Label(m, text="Lyve Cloud Access Key ID:", width=20).grid(row=2, column=1)
+    row += 1
+    Label(m, text="Lyve Cloud Access Key ID:", width=20).grid(row=row, column=1)
     lyve_id = Entry(m, width=20)
-    lyve_id.grid(row=2, column=2)
+    lyve_id.grid(row=row, column=2)
 
-    Label(m, text="AWS Access Key ID:", width=20).grid(row=2, column=3)
+    Label(m, text="AWS Access Key ID:", width=20).grid(row=row, column=3)
     aws_id = Entry(m, width=20)
-    aws_id.grid(row=2, column=4)
+    aws_id.grid(row=row, column=4)
 
-    # Row 3
-    Label(m, text="Lyve Cloud Secret Access Key:").grid(row=3, column=1)
+    row += 1
+    Label(m, text="Lyve Cloud Secret Access Key:").grid(row=row, column=1)
     lyve_secret = Entry(m, width=20)
-    lyve_secret.grid(row=3, column=2)
+    lyve_secret.grid(row=row, column=2)
 
-    Label(m, text="AWS Secret Access Key:").grid(row=3, column=3)
+    Label(m, text="AWS Secret Access Key:").grid(row=row, column=3)
     aws_secret = Entry(m, width=20)
-    aws_secret.grid(row=3, column=4)
+    aws_secret.grid(row=row, column=4)
 
-    # Row 4
-    Label(m, text="Lyve Cloud Bucket to Transfer:").grid(row=4, column=1)
+    row += 1
+
+    Label(m, text="Lyve Cloud Region:").grid(row=row, column=1)
+    lyve_region = Entry(m, width=20)
+    lyve_region.grid(row=row, column=2)
+
+    Label(m, text="AWS S3 Region:").grid(row=row, column=3)
+    aws_region = Entry(m, width=20)
+    aws_region.grid(row=row, column=4)
+
+    row += 1
+    Label(m, text="Lyve Cloud Bucket to Transfer:").grid(row=row, column=1)
     lyve_bucket = StringVar()
     lyve_buckets = [""]
     drop = OptionMenu(m, lyve_bucket, *lyve_buckets)
-    drop.grid(row=4, column=2)
+    drop.grid(row=row, column=2)
 
-    Label(m, text="AWS Bucket to Transfer:").grid(row=4, column=3)
+    Label(m, text="AWS Bucket to Transfer:").grid(row=row, column=3)
     aws_bucket = StringVar()
     aws_buckets = [""]
     drop1 = OptionMenu(m, aws_bucket, *aws_buckets)
-    drop1.grid(row=4, column=4)
+    drop1.grid(row=row, column=4)
 
-    # Row 5
-    Label(m, text="Number of Threads:").grid(row=5, column=1)
+    row += 1
+    Label(m, text="Number of Threads:").grid(row=row, column=1)
     num_threads = Entry(m, width=20)
-    num_threads.grid(row=5, column=2)
+    num_threads.grid(row=row, column=2)
     num_threads.insert(0, "4")
 
-    Label(m, text="Migration Type:").grid(row=5, column=3)
+    Label(m, text="Migration Type:").grid(row=row, column=3)
     migration_type = StringVar()
     migration_type.set("AWS to Lyve")
     drop2 = OptionMenu(m, migration_type, *["AWS to Lyve", "Lyve to AWS"])
-    drop2.grid(row=5, column=4)
+    drop2.grid(row=row, column=4)
 
-    # Row 6
+    row += 1
     Button(
         m,
         text="Generate Config File",
         command=lambda: generate_config(
-            lyve_id, lyve_secret, lyve_bucket, aws_id, aws_secret, aws_bucket
+            lyve_id,
+            lyve_secret,
+            lyve_bucket,
+            aws_id,
+            aws_secret,
+            aws_bucket,
+            aws_region,
+            lyve_region,
         ),
-    ).grid(row=6, column=1)
+    ).grid(row=row, column=1)
     config_label = Label(m, text="Please fill out all the fields.")
-    config_label.grid(row=6, column=2)
+    config_label.grid(row=row, column=2)
 
-    Label(m, text="").grid(row=7, column=1)
+    row += 1
+    Label(m, text="").grid(row=row, column=1)
 
-    # Row 8
-    Label(m, text="---Filters---").grid(row=8, column=1)
+    row += 1
+    Label(m, text="---Filters---").grid(row=row, column=1)
 
-    # Row 9
-    Label(m, text="Min Date:").grid(row=9, column=1)
+    row += 1
+    Label(m, text="Min Date:").grid(row=row, column=1)
     min_date = DateEntry(m, width=16, background="magenta3", foreground="white", bd=2)
-    min_date.grid(row=9, column=2)
+    min_date.grid(row=row, column=2)
 
-    Label(m, text="Max Date:").grid(row=9, column=3)
+    Label(m, text="Max Date:").grid(row=row, column=3)
     max_date = DateEntry(m, width=16, background="magenta3", foreground="white", bd=2)
-    max_date.grid(row=9, column=4)
+    max_date.grid(row=row, column=4)
 
-    # Row 10
-    Label(m, text="Min Size (in KB):").grid(row=10, column=1)
+    row += 1
+    Label(m, text="Min Size (in KB):").grid(row=row, column=1)
     min_size = Entry(m, width=20)
-    min_size.grid(row=10, column=2)
+    min_size.grid(row=row, column=2)
     min_size.insert(0, "0")
 
-    Label(m, text="Max Size (in KB):").grid(row=10, column=3)
+    Label(m, text="Max Size (in KB):").grid(row=row, column=3)
     max_size = Entry(m, width=20)
-    max_size.grid(row=10, column=4)
+    max_size.grid(row=row, column=4)
     max_size.insert(0, "1000000")
 
-    Label(m, text="").grid(row=11, column=1)
+    row += 1
+    Label(m, text="").grid(row=row, column=1)
 
-    # Row 12
+    row += 1
     Button(
         m,
         text="Migrate Data",
@@ -233,11 +265,11 @@ if __name__ == "__main__":
             int(min_size.get()),
             int(max_size.get()),
         ),
-    ).grid(row=12, column=1)
+    ).grid(row=row, column=1)
     migration_label = Label(m, text="", justify=LEFT)
-    migration_label.grid(row=12, column=2)
+    migration_label.grid(row=row, column=2)
 
-    # Row 13
-    Button(m, text="Quit Application", command=m.quit).grid(row=13, column=1)
+    row += 1
+    Button(m, text="Quit Application", command=m.quit).grid(row=row, column=1)
 
     m.mainloop()
