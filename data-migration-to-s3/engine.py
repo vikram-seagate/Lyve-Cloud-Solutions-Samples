@@ -92,7 +92,7 @@ def generate_config(lyve_id, lyve_secret, lyve_bucket, aws_id, aws_secret, aws_b
     if aws_id.get() and aws_secret.get():
         aws_client = generate_client(config["aws"]["params"])
         aws_buckets = [
-            bucket["Name"] for bucket in lyve_client.list_buckets()["Buckets"]
+            bucket["Name"] for bucket in aws_client.list_buckets()["Buckets"]
         ]
         drop1 = OptionMenu(m, aws_bucket, *aws_buckets)
         drop1.grid(row=4, column=4)
