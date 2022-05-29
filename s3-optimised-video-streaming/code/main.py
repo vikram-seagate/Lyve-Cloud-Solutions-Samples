@@ -1,3 +1,4 @@
+from fastapi.staticfiles import StaticFiles
 import json
 import logging
 
@@ -5,11 +6,11 @@ import boto3
 from fastapi import (FastAPI, File, Form, HTTPException, Request, UploadFile,
                      status)
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse, StreamingResponse
-
+from fastapi.responses import StreamingResponse, HTMLResponse, FileResponse
+import time
 # 1 MB Chunks when downloading from S3
 S3_DOWNLOAD_BYTE_LENGTH = 1024 ** 2 * 1
-CHUNK_SIZE = 1024 ** 2 * 8   # 8 MB Chunks to be downloaded per user request
+CHUNK_SIZE = 1024 ** 2 * 8  # 8 MB Chunks to be downloaded per user request
 CONFIG_LOCATION = "config.json"
 # For 8 MB Chunk Size and 1 MB S3 Download byte length, this means that there will be 8 TCP requests to S3, while streaming the entire response.
 # This means that when the FIRST 1 MB S3 download is completed, this file can be immediately sent over to the client
@@ -21,8 +22,8 @@ CONFIG_LOCATION = "config.json"
 # Chunk Size can be changed as required, but may cause latency lags if it is too small (8MB is ideal)
 # Smaller Chunk Size may help with network egress fees from S3 downloads
 
+CACHE = {}
 
-# create logger
 logger = logging.getLogger('SeagateVideoStreaming')
 logger.setLevel(logging.DEBUG)
 
@@ -39,7 +40,6 @@ logger.addHandler(ch)
 
 
 app = FastAPI()
-
 
 
 # CORS template
@@ -109,23 +109,36 @@ def delete_bucket(bucket_name):
 
 
 def send_bytes_range_requests(
-    bucket: str, file_name: str, start: int, end: int, chunk_size: int = S3_DOWNLOAD_BYTE_LENGTH  # 4 MB chunks
+    bucket: str, file_name: str, start: int, end: int, starttime: float, chunk_size: int = S3_DOWNLOAD_BYTE_LENGTH  # 1 MB chunks
 ):
     """Send a file in chunks using Range Requests specification RFC7233
 
     `start` and `end` parameters are inclusive due to specification
     """
     pos = start
+    # starttime = None
+    endtime = time.time() - starttime
+    logger.debug("TIME TAKEN FOR TTFB: " +
+                 str(int(endtime * 1000)) + "ms")
     while (pos) < end:
-
         read_size = min(chunk_size, end + 1 - pos)
-
+        # starttime = time.time()
         resp = s3_client.get_object(
             Bucket=bucket, Key=file_name, Range=f"bytes={pos}-{pos + read_size - 1}")
+        if pos != start:
+            endtime = time.time() - starttime
+            starttime = time.time()
+            logger.debug("Downloading from S3 - End: " + str(int(end / 1024 / 1024)).ljust(2) + " MB " + "Current: " +
+                         str(int(pos / 1024 / 1024)).ljust(2) + " MB Total: " + str(int((pos - start) / 1024 / 1024)).ljust(2) +
+                         " MB content_length: " + str(int(int(resp['ContentLength']) / 1024 / 1024)).ljust(2) + " MB " +
+                         "Time Taken: " + str(int(endtime * 1000)) + "ms")
+        else:
+            logger.debug("Downloading from S3 - End: " + str(int(end / 1024 / 1024)).ljust(2) + " MB " + "Current: " +
+                         str(int(pos / 1024 / 1024)).ljust(2) + " MB Total: " + str(int((pos - start) / 1024 / 1024)).ljust(2) +
+                         " MB content_length: " + str(int(int(resp['ContentLength']) / 1024 / 1024)).ljust(2) + " MB ")
+
         pos = pos + resp['ContentLength']
-        logger.debug("Downloading from S3 - End: " + str(int(end / 1024 / 1024)) + " MB  " + "Current: " +
-                     str(int(pos / 1024 / 1024)) + " MB  Total: " + str(int((pos-start) / 1024 / 1024)) +
-                     " MB  content_length: " + str(int(int(resp['ContentLength']) / 1024 / 1024)) + " MB")
+
         yield resp["Body"].read()
 
 
@@ -157,7 +170,7 @@ def _get_range_header(range_header: str, file_size: int):
 
 
 def range_requests_response(
-    request: Request, bucket: str, file_name: str, content_type: str, chunks: int = CHUNK_SIZE
+    request: Request, bucket: str, file_name: str, content_type: str, starttime: float, chunks: int = CHUNK_SIZE
 ):
     """Returns StreamingResponse using Range Requests of a given file
 
@@ -166,13 +179,22 @@ def range_requests_response(
     Follows the RFC 7233 Range Requests Specification
 
     """
+
     range_header = request.headers.get("range")
-    logger.debug('Requested Range header from GET request')
-    logger.debug('Getting HEAD information from S3')
-    response = s3_client.head_object(Bucket=bucket, Key=file_name)
-    file_size = response['ContentLength']
-    logger.debug('Finished GET HEAD information from S3')
-    logger.debug('File Size: ' + str(int(file_size / 1024 / 1024)) + "MB")
+    # Requested Range header from GET request
+    key = bucket + "/" + file_name
+    if key in CACHE:
+        file_size = CACHE[key]
+    else:
+        logger.debug('Getting HEAD information from S3')
+        response = s3_client.head_object(Bucket=bucket, Key=file_name)
+        file_size = response['ContentLength']
+        CACHE[key] = file_size
+        endtime = time.time() - starttime
+
+        logger.debug('TIME TAKEN TO GET HEAD information from S3: ' +
+                     str(int(endtime * 1000)) + "ms")
+        logger.debug('File Size: ' + str(int(file_size / 1024 / 1024)) + "MB")
 
     headers = {
         "content-type": content_type,
@@ -197,7 +219,7 @@ def range_requests_response(
 
     return StreamingResponse(
         send_bytes_range_requests(
-            bucket=bucket, file_name=file_name, start=start, end=end),
+            bucket=bucket, file_name=file_name, start=start, end=end, starttime=starttime),
         headers=headers,
         status_code=status_code,
     )
@@ -206,24 +228,26 @@ def range_requests_response(
 """ Functions for objects operations """
 
 
-def list_objects(bucket_name) -> dict:
+async def list_objects(bucket_name):
     current_bucket = s3_resource.Bucket(bucket_name)
     print('The files in bucket %s:\n' % bucket_name)
+    data = []
     for obj in current_bucket.objects.all():
-        print(obj.meta.data)
+        data.append(obj.meta.data)
+    return data
 
 
-def upload_object(bucket_name, file_name, file_location):
+async def upload_object(bucket_name, file_name, file_location):
     s3_resource.Bucket(bucket_name).upload_file(file_location, file_name)
     print('Object %s successfully uploaded' % file_name)
 
 
-def delete_object(bucket_name, file_name):
+async def delete_object(bucket_name, file_name):
     s3_client.delete_object(Bucket=bucket_name, Key=file_name)
     print('Object %s successfully deleted' % file_name)
 
 
-def download_object(bucket_name, file_name, file_location):
+async def download_object(bucket_name, file_name, file_location):
     s3_resource.Bucket(bucket_name).download_file(file_name, file_location)
     print('Object %s successfully downloaded' % file_name)
 
@@ -238,10 +262,9 @@ Authentication deployment is left for the end-user, as each authentication deplo
 
 
 @app.get("/watch")
-def get_video(request: Request, v: str, bucket: str):
-    return range_requests_response(
-        request, bucket=bucket, file_name=v, content_type="video/mp4"
-    )
+async def get_video(request: Request, v: str, bucket: str):
+    starttime = time.time()
+    return range_requests_response(request, bucket=bucket, file_name=v, content_type="video/mp4", starttime=starttime)
 
 
 @app.get("/list_buckets")
@@ -251,11 +274,11 @@ async def list_bucket_endpoint():
 
 @app.get("/list_objects")
 async def list_object_endpoint(bucket: str):
-    return list_objects(bucket)
+    return await list_objects(bucket)
 
 
 @app.post("/create_bucket")
-def create_bucket_post(bucket_name):
+async def create_bucket_post(bucket_name):
     s3_client.create_bucket(Bucket=bucket_name)
     print('Successfully created bucket %s' % bucket_name)
     return "Success"
@@ -277,11 +300,21 @@ async def create_files(file: UploadFile = File(...), file_name: str = Form(...),
             raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/")
-async def home():
-    return RedirectResponse("/docs")
+app.mount("/assets", StaticFiles(directory='web/assets'), name="assets")
+app.mount("/images", StaticFiles(directory='web/images'), name="images")
 
+
+@app.get("/", include_in_schema=False, response_class=HTMLResponse)
+async def home():
+    with open("web/index.html") as f:
+        return f.read()
+
+
+@app.get('/favicon.ico', include_in_schema=False)
+async def favicon():
+    favicon_path = "web/favicon.ico"
+    return FileResponse(favicon_path)
 
 # You can run the file from commandline using the following command below
 # Remove the --reload flag for production use case
-# uvicorn main:app --host 127.0.0.1 --port 8080 --reload
+# uvicorn main:app --host 127.0.0.1 --port 8080 --reload --timeout-keep-alive 60
