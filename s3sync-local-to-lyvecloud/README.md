@@ -58,3 +58,4 @@ The script checks if the trigger file exists inside dist directory if exists the
 
 ## Tested by:
 * May 2, 2022: Rahul Gode (rahul.gode@seagate.com) on Linux
+* May 16, 2022: Bari Arviv (bari.arviv@seagate.com) on Ubuntu
