@@ -66,11 +66,15 @@ Here's what you'll need:
 uvicorn main:app --host 127.0.0.1 --port 8080 --reload
 ```
 
+**Step 5:** Head to the website demo or the docs at the following URLs
+http://127.0.0.1:8080
+http://127.0.0.1:8080/docs
+
 ## Results 
 
 From Chrome's DevTools, the TTFB for a 206 Partial Content is on average roughly ~30-70 ms. This is using the default of 1 MB Byte Range requests.
 
-However, this is done on a local environment with 0 latency from Client to FastAPI. 
+However, this is done on a local environment with 0 distance latency from Client to FastAPI. 
 
 ```mermaid
 sequenceDiagram
