@@ -345,7 +345,7 @@ exports.getMediaNormal = function (
                 mediaPath = row.path;
                 mediaPath = mediaPath.replace(/\//gi, "\\/\\");
             } else {
-                result.status = 404;
+                console.log(result);
             }
         }
     );
@@ -384,6 +384,8 @@ exports.getMediaNormal = function (
 
             return result;
         }
+    } else {
+        result.status = 404;
     }
 
     if (mediaId) {
