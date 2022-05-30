@@ -13,8 +13,10 @@ dist
 dist-ssr
 coverage
 *.local
-server/media
-server/data
+server/media/*
+!server/media/.keep
+server/data/*
+!server/data/.keep
 
 /cypress/videos/
 /cypress/screenshots/

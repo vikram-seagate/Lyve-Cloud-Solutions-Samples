@@ -1,6 +1,6 @@
 const { exit } = require("process");
 const fs = require("fs");
-const sqlite3 = require("sqlite3");
+const Database = require("better-sqlite3");
 const storageConnector = require("./storageConnector");
 const { imageMap, audioMap, videoMap } = require("./MIMEMap");
 
@@ -14,8 +14,7 @@ const { imageMap, audioMap, videoMap } = require("./MIMEMap");
  * @throws Error in creating new tables as the tables already exist.
  */
 function createTables(newDb) {
-    return newDb.exec(
-    `
+  newDb.exec(`
     CREATE TABLE bucket (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         name TEXT NOT NULL UNIQUE,
@@ -38,7 +37,9 @@ function createTables(newDb) {
         name TEXT NOT NULL UNIQUE,
         chunk_size INTEGER NOT NULL,
         media_id INTEGER NOT NULL,
-        FOREIGN KEY(media_id) REFERENCES media(id) ON DELETE CASCADE
+        bucket_id INTEGER NOT NULL,
+        FOREIGN KEY(media_id) REFERENCES media(id) ON DELETE CASCADE, 
+        FOREIGN KEY(bucket_id) REFERENCES bucket(id) ON DELETE CASCADE
     );
 
     CREATE TABLE queue (
@@ -47,39 +48,27 @@ function createTables(newDb) {
         is_image INTEGER NOT NULL, 
         size INTEGER NOT NULL
     )
-    `,
-        (err) => {
-            if (err) {
-                console.error(err);
-            }
-        }
-    );
+    `);
 }
 
-let db = new sqlite3.Database(
-    "server/data/faststream.db",
-    sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
-    (err) => {
-        if (err && err.code === "SQLITE_CANTOPEN") {
-            console.log(
-                "Error in SQL database: " +
-                    err +
-                    "\nEnsure correct DB path specified. "
-            );
-            exit(1);
-        } else if (err) {
-            console.log("Error in SQL database: " + err);
-            exit(1);
-        }
-    }
-);
+let db;
+try {
+  db = new Database("server/data/faststream.db");
+} catch (err) {
+  console.error(err);
+}
 
-createTables(db);
+try {
+  createTables(db);
+} catch (err) {
+  console.error(err);
+}
 
 // All operations of the interface that synchronises cached and non-cached data below
 /**
  * @module mediaManager
  *
+ * @method getStats
  * @method getAllBuckets
  * @method getAllBucketsHard
  * @method getAllMedia
@@ -90,31 +79,52 @@ createTables(db);
  * @method getMediaNormalById
  */
 
+exports.getStats = function () {
+  let results
+  try {
+    results = storageConnector.getStats();
+  } catch (err) {
+    console.error(err);
+    return {
+      status: 500, 
+      data: null
+    };
+  }
+
+  return {
+    status: 200, 
+    data: results
+  };
+}
+
 /**
  * Retrieves the list of buckets in the connected S3 from cache.
  *
  * @returns {{status: number, data: Array<Object>}} The Response to use in the REST Response.
  */
 exports.getAllBuckets = function () {
-    let result = {
-        status: null,
-        data: [],
-    };
+  let result = {
+    status: null,
+    data: [],
+  };
 
-    db.each("SELECT * FROM bucket", (err, row) => {
-        if (err) {
-            console.error(err);
-            result.status = 500;
-        } else {
-            result.data.push({
-                bucketId: row.id,
-                bucketName: row.name,
-            });
-            result.status = 200;
-        }
-    });
+  try {
+    const stmt = db.prepare("SELECT * FROM bucket");
+    const rows = stmt.all();
 
-    return result;
+    for (let row of rows) {
+      result.data.push({
+        bucketId: row.id,
+        bucketName: row.name,
+      });
+      result.status = 200;
+    }
+  } catch (err) {
+    console.error(err);
+    result.status = 500;
+  }
+
+  return result;
 };
 
 /**
@@ -125,30 +135,41 @@ exports.getAllBuckets = function () {
  * @returns {Promise<{status: number, data: Array<Object>}>} The Response to use in the REST Response.
  */
 exports.getAllBucketsHard = async function () {
-    let data;
-    try {
-        data = await storageConnector.getAllBuckets();
+  let data;
+  try {
+    data = await storageConnector.getAllBuckets();
 
-        if (data["$metadata"].httpStatusCode !== 200) {
-            return {
-                status: data["$metadata"].httpStatusCode,
-                data: [],
-            };
-        }
-    } catch (err) {
-        console.error(err);
-        return {
-            status: 500,
-            data: [],
-        };
-    }
-
-    let result = {
+    if (data["$metadata"].httpStatusCode !== 200) {
+      return {
         status: data["$metadata"].httpStatusCode,
-        data: data.Buckets,
+        data: [],
+      };
+    }
+  } catch (err) {
+    console.error(err);
+    return {
+      status: 500,
+      data: [],
     };
-    return result;
+  }
+
+  let result = {
+    status: data["$metadata"].httpStatusCode,
+    data: data.Buckets,
+  };
+  return result;
 };
+
+function getBucketSize(bucketId) {
+  const stmt = db.prepare("SELECT COUNT(`id`) AS `total_count` FROM media WHERE bucket_id = @bucket_id");
+  const row = stmt.get({ bucket_id: bucketId });
+
+  if (row === undefined) {
+    return 0;
+  } else {
+    return row.total_count;
+  }
+}
 
 /**
  * Retrieves a list of media in the specified bucket from cache.
@@ -160,52 +181,52 @@ exports.getAllBucketsHard = async function () {
  * @returns {{status: number, data: Array<Object>}} The Response to use in the REST Response.
  */
 exports.getAllMedia = function (bucketName, page = 1, limit = 10) {
-    let result = {
-        status: null,
-        data: [],
-    };
+  let result = {
+    status: null,
+    data: { pages: 0, media: [] },
+  };
 
-    let bucketId;
-    db.get(
-        "SELECT * FROM bucket WHERE name = $name",
-        { $name: bucketName },
-        (err, row) => {
-            if (err) {
-                console.error(err);
-                result.status = 500;
-            } else if (row) {
-                bucketId = row.id;
-            } else {
-                result.status = 404;
-            }
-        }
-    );
-    if (bucketId) {
-        db.each(
-            "SELECT * FROM media WHERE bucket_id = $bucket_id LIMIT $limit OFFSET $offset",
-            {
-                $bucket_id: bucketId,
-                $limit: limit,
-                $offset: (page - 1) * limit,
-            },
-            (err, row) => {
-                if (err) {
-                    console.error(err);
-                    result.status = 500;
+  let bucketId;
+  try {
+    const stmt = db.prepare("SELECT * FROM bucket WHERE name = @name");
+    const row = stmt.get({ name: bucketName });
 
-                    return result;
-                } else {
-                    result.data.push({
-                        mediaId: row.id,
-                        mediaName: row.name + row.extension,
-                    });
-                    result.status = 200;
-                }
-            }
-        );
+    if (row === undefined) {
+      result.status = 404;
+    } else {
+      bucketId = row.id;
     }
+  } catch (err) {
+    console.error(err);
+    result.status = 500;
+  }
 
-    return result;
+  if (bucketId) {
+    try {
+      const stmt = db.prepare(
+        "SELECT * FROM media WHERE bucket_id = @bucket_id LIMIT @limit OFFSET @offset"
+      );
+      const rows = stmt.all({
+        bucket_id: bucketId,
+        limit: limit,
+        offset: (page - 1) * limit,
+      });
+
+      for (let row of rows) {
+        result.data.media.push({
+          mediaId: row.id,
+          mediaName: row.name + row.extension,
+        });
+        result.status = 200;
+        result.data.pages = getBucketSize(bucketId);
+      }
+    } catch (err) {
+      console.error(err);
+      result.status = 500;
+    }
+  }
+
+  return result;
 };
 
 /**
@@ -217,35 +238,32 @@ exports.getAllMedia = function (bucketName, page = 1, limit = 10) {
  * @param {number} [page=1] The specified page to retrieve under pagination.
  * @param {number} [limit=10] The specified number of items in each page under pagination.
  *
- * @returns {Promise<{status: number, data: Array<Object>}>} The Response to use in the REST Response.
+ * @returns {Promise<{status: number, data: {media: Array<Object>, pages: number | null}}>} The Response to use in the REST Response.
  */
 exports.getAllMediaHard = async function (bucketName, page = 1, limit = 10) {
-    let data;
-    try {
-        data = await storageConnector.getAllMedia(bucketName);
+  let data;
+  try {
+    data = await storageConnector.getAllMedia(bucketName);
 
-        if (data["$metadata"].httpStatusCode !== 200) {
-            return {
-                status: data["$metadata"].httpStatusCode,
-                data: [],
-            };
-        }
-    } catch (err) {
-        console.error(err);
-        return {
-            status: 500,
-            data: [],
-        };
-    }
-
-    let result = {
+    if (data["$metadata"].httpStatusCode !== 200) {
+      return {
         status: data["$metadata"].httpStatusCode,
-        data: data.Contents.slice(
-            (page - 1) * limit,
-            (page - 1) * limit + limit
-        ),
+        data: { pages: null, media: [] },
+      };
+    }
+  } catch (err) {
+    console.error(err);
+    return {
+      status: 500,
+      data: { pages: null, media: [] },
     };
-    return result;
+  }
+
+  let result = {
+    status: data["$metadata"].httpStatusCode,
+    data: { media: data.Contents.slice((page - 1) * limit, (page - 1) * limit + limit), pages: Math.ceil(data.Contents.length / (limit * 1.0)) },
+  };
+  return result;
 };
 
 /**
@@ -258,52 +276,54 @@ exports.getAllMediaHard = async function (bucketName, page = 1, limit = 10) {
  * @returns {{status: number, data: Array<Object>}} The Response to use in the REST Response.
  */
 exports.getAllMediaById = function (bucketId, page, limit) {
-    let result = {
-        status: null,
-        data: [],
-    };
+  let result = {
+    status: null,
+    data: { pages: 0, media: [] },
+  };
 
-    let isBucket = false;
-    db.get(
-        "SELECT * FROM bucket WHERE id = $id",
-        { $id: bucketId },
-        (err, row) => {
-            if (err) {
-                console.error(err);
-                result.status = 500;
-            } else if (row) {
-                isBucket = true;
-            } else {
-                result.status = 404;
-            }
-        }
-    );
-    if (isBucket) {
-        db.each(
-            "SELECT * FROM media WHERE bucket_id = $bucket_id LIMIT $limit OFFSET $offset",
-            {
-                $bucket_id: bucketId,
-                $limit: limit,
-                $offset: (page - 1) * limit,
-            },
-            (err, row) => {
-                if (err) {
-                    console.error(err);
-                    result.status = 500;
+  let isBucket = false;
+  try {
+    const stmt = db.prepare("SELECT * FROM bucket WHERE id = @id");
+    const row = stmt.get({ id: bucketId });
 
-                    return result;
-                } else {
-                    result.data.push({
-                        mediaId: row.id,
-                        mediaName: row.name + row.extension,
-                    });
-                    result.status = 200;
-                }
-            }
-        );
+    if (row === undefined) {
+      result.status = 404;
+    } else {
+      isBucket = true;
     }
+  } catch (err) {
+    console.error(err);
+    result.status = 500;
+  }
 
-    return result;
+  if (isBucket) {
+    try {
+      const stmt = db.prepare(
+        "SELECT * FROM media WHERE bucket_id = @bucket_id LIMIT @limit OFFSET @offset"
+      );
+      const rows = stmt.all({
+        bucket_id: bucketId,
+        limit: limit,
+        offset: (page - 1) * limit,
+      });
+
+      for (let row of rows) {
+        result.data.media.push({
+          mediaId: row.id,
+          mediaName: row.name + row.extension,
+        });
+        result.status = 200;
+        result.data.pages = getBucketSize(bucketId);
+      }
+    } catch (err) {
+      console.error(err);
+      result.status = 500;
+
+      return result;
+    }
+  }
+
+  return result;
 };
 
 /**
@@ -319,154 +339,164 @@ exports.getAllMediaById = function (bucketId, page, limit) {
  * @returns {{status: number, stream: ReadableStream, headers: Object<string, *>}} The Response to use in the REST Response.
  */
 exports.getMediaNormal = function (
-    bucketName,
-    mediaName,
-    chunkSize,
-    start = 0
+  bucketName,
+  mediaName,
+  chunkSize,
+  start = 0
 ) {
-    let result = {
-        status: null,
-        stream: null,
-        headers: null,
-    };
-    let mediaPath;
-    let mediaSize;
-    let bucketId;
-    let mediaId;
-    db.get(
-        "SELECT * FROM bucket WHERE name = $name",
-        { $name: bucketName },
-        (err, row) => {
-            if (err) {
-                console.error(err);
-                result.status = 500;
-            } else if (row) {
-                bucketId = row.id;
-                mediaPath = row.path;
-                mediaPath = mediaPath.replace(/\//gi, "\\/\\");
-            } else {
-                console.log(result);
-            }
-        }
-    );
+  let result = {
+    status: null,
+    stream: null,
+    headers: null,
+  };
+  let mediaPath;
+  let mediaSize;
+  let bucketId;
+  let mediaId;
+  try {
+    const stmt = db.prepare("SELECT * FROM bucket WHERE name = @name");
+    const row = stmt.get({ name: bucketName });
 
-    let mediaExtIdx = mediaName.lastIndexOf(".") + 1;
-    let mediaExt;
-    if (bucketId) {
-        if (mediaExtIdx !== 0) {
-            mediaExt = mediaName.slice(mediaExtIdx);
-            mediaExt = mediaExt.toLowerCase();
-        }
-        if (mediaExt) {
-            db.get(
-                "SELECT * FROM media WHERE bucket_id = $bucket_id AND name = $name AND extension = $extension",
-                {
-                    $bucket_id: bucketId,
-                    $name: mediaName.slice(0, mediaExtIdx - 1),
-                    $extension: extension,
-                },
-                (err, row) => {
-                    if (err) {
-                        console.error(err);
-                        result.status = 500;
-                    } else if (row) {
-                        mediaId = row.id;
-                        mediaPath += row.path.replace(/\//gi, "\\/\\");
-                        mediaSize = row.size;
-                    } else {
-                        result.status = 404;
-                    }
-                }
-            );
-        } else {
-            console.error("The requested media's MIME type is not specified. ");
-            result.status = 400;
-
-            return result;
-        }
+    if (row === undefined) {
+      console.log(result);
+      result.status = 404;
     } else {
-        result.status = 404;
+      bucketId = row.id;
+      mediaPath = row.path;
+      mediaPath = mediaPath.replace(/\//gi, "\\/\\");
     }
+  } catch (err) {
+    console.error(err);
+    result.status = 500;
+  }
 
-    if (mediaId) {
-        if (imageMap.get(mediaExt) !== undefined) {
-            db.get(
-                "SELECT * FROM local_store WHERE media_id = $media_id",
-                { $media_id: mediaId },
-                (err, row) => {
-                    if (err) {
-                        console.error(err);
-                        result.status = 500;
-                    } else if (row) {
-                        let dataStream = fs.createReadStream(
-                            `server/media/${mediaPath}.${mediaExt}`
-                        );
-                        result.stream = dataStream;
+  let mediaExtIdx = mediaName.lastIndexOf(".") + 1;
+  let mediaExt;
+  if (bucketId) {
+    if (mediaExtIdx !== 0) {
+      mediaExt = mediaName.slice(mediaExtIdx);
+      mediaExt = mediaExt.toLowerCase();
+    }
+    if (mediaExt) {
+      try {
+        const stmt = db.prepare(
+          "SELECT * FROM media WHERE bucket_id = @bucket_id AND name = @name AND extension = @extension"
+        );
+        const row = stmt.get({
+          bucket_id: bucketId,
+          name: mediaName.slice(0, mediaExtIdx - 1),
+          extension: mediaExt,
+        });
 
-                        result.headers = {
-                            "Content-Type": imageMap.get(mediaExt),
-                        };
-
-                        result.status = 200;
-                    } else {
-                        result.status = 404;
-                    }
-                }
-            );
+        if (row === undefined) {
+          result.status = 404;
         } else {
-            if (mediaSize === null) {
-                mediaSize = storageConnector.getMediaSize(
-                    bucketName,
-                    mediaName
-                );
-                if (mediaSize === null) {
-                    console.error("Media not present in storage. ");
-                    result.status = 404;
-
-                    return result;
-                }
-            }
-            let end = Math.min(start + chunkSize, mediaSize - 1);
-            db.get(
-                "SELECT * FROM local_store WHERE media_id = $media_id AND (chunk_size = $media_size OR chunk_size > $end)",
-                { $media_id: mediaId, $media_size: mediaSize, $end: end },
-                (err, row) => {
-                    if (err) {
-                        console.error(err);
-                        result.status = 500;
-                    } else if (row) {
-                        let contentType;
-                        if (videoMap.get(mediaExt) !== undefined) {
-                            contentType = videoMap.get(mediaExt);
-                        } else if (audioMap.get(mediaExt) !== undefined) {
-                            contentType = audioMap.get(mediaExt);
-                        } else {
-                            result.status = 500;
-                            return;
-                        }
-                        let contentLength = end - start + 1;
-                        let dataStream = fs.createReadStream(
-                            `server/media/${mediaPath}.${mediaExt}`,
-                            { start, end }
-                        );
-                        result.stream = dataStream;
-                        result.headers = {
-                            "Content-Range": `bytes ${start}-${end}/${mediaSize}`,
-                            "Accept-Ranges": "bytes",
-                            "Content-Length": contentLength,
-                            "Content-Type": contentType,
-                        };
-
-                        result.status = 206;
-                    } else {
-                        result.status = 404;
-                    }
-                }
-            );
+          mediaId = row.id;
+          mediaPath += row.path.replace(/\//gi, "\\/\\");
+          mediaSize = row.size;
         }
-    }
+      } catch (err) {
+        console.error(err);
+        result.status = 500;
+      }
+    } else {
+      console.error("The requested media's MIME type is not specified. ");
+      result.status = 400;
 
-    return result;
+      return result;
+    }
+  }
+
+  if (mediaId) {
+    if (imageMap.get(mediaExt) !== undefined) {
+      try {
+        const stmt = db.prepare(
+          "SELECT * FROM local_store WHERE media_id = @media_id"
+        );
+        const row = stmt.get({ media_id: mediaId });
+
+        if (row === undefined) {
+          result.status = 404;
+        } else {
+          let dataStream = fs.createReadStream(
+            `server/media/${mediaPath}.${mediaExt}`
+          );
+          result.stream = dataStream;
+
+          result.headers = {
+            "Content-Type": imageMap.get(mediaExt),
+          };
+
+          result.status = 200;
+
+          const stmt = db.prepare("UPDATE media SET count = count + 1 WHERE id = @id");
+          stmt.run({ id: mediaId });
+        }
+      } catch (err) {
+        console.error(err);
+        result.status = 500;
+      }
+    } else {
+      if (mediaSize === null) {
+        mediaSize = storageConnector.getMediaSize(bucketName, mediaName);
+        if (mediaSize === null) {
+          console.error("Media not present in storage. ");
+          result.status = 404;
+
+          return result;
+        }
+      }
+      let end = Math.min(start + chunkSize, mediaSize - 1);
+      try {
+        const stmt = db.prepare(
+          "SELECT * FROM local_store WHERE media_id = @media_id AND (chunk_size = @media_size OR chunk_size > @end)"
+        );
+        const row = stmt.get({
+          media_id: mediaId,
+          media_size: mediaSize,
+          end: end,
+        });
+
+        if (row === undefined) {
+          result.status = 404;
+        } else {
+          let contentType;
+          if (videoMap.get(mediaExt) !== undefined) {
+            contentType = videoMap.get(mediaExt);
+          } else if (audioMap.get(mediaExt) !== undefined) {
+            contentType = audioMap.get(mediaExt);
+          } else {
+            result.status = 500;
+            return;
+          }
+          let contentLength = end - start + 1;
+          let dataStream = fs.createReadStream(
+            `server/media/${mediaPath}.${mediaExt}`,
+            { start, end }
+          );
+          result.stream = dataStream;
+          result.headers = {
+            "Content-Range": `bytes ${start}-${end}/${mediaSize}`,
+            "Accept-Ranges": "bytes",
+            "Content-Length": contentLength,
+            "Content-Type": contentType,
+          };
+
+          result.status = 206;
+
+          if (start === 0) {
+            const stmt = db.prepare("UPDATE media SET count = count + 1 WHERE id = @id");
+            stmt.run({ id: mediaId });
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        result.status = 500;
+      }
+    }
+  }
+
+  return result;
 };
 
 /**
@@ -484,175 +514,172 @@ exports.getMediaNormal = function (
  * @returns {Promise<{status: number, stream: ReadableStream, headers: Object<string, *>}>} The Response to use in the REST Response.
  */
 exports.getMediaNormalHard = async function (
-    bucketName,
-    mediaName,
-    chunkSize,
-    start = 0
+  bucketName,
+  mediaName,
+  chunkSize,
+  start = 0
 ) {
-    // let mediaSize = fs.statSync("server/media/Test_Recording.mp4").size;
-    // let end_ = Math.min(start + chunkSize, mediaSize - 1);
-    // let data = {
-    //     "$metadata": {
-    //         httpStatusCode: 200
-    //     },
-    //     Body: fs.createReadStream("server/media/Test_Recording.mp4", { start, end_ })
-    // }
+  // let mediaSize = fs.statSync("server/media/Test_Recording.mp4").size;
+  // let end_ = Math.min(start + chunkSize, mediaSize - 1);
+  // let data = {
+  //     "$metadata": {
+  //         httpStatusCode: 200
+  //     },
+  //     Body: fs.createReadStream("server/media/Test_Recording.mp4", { start, end_ })
+  // }
 
-    // Get the media file's extension
-    let mediaExtIdx = mediaName.lastIndexOf(".") + 1;
-    let mediaExt;
-    if (mediaExtIdx !== 0) {
-        mediaExt = mediaName.slice(mediaExtIdx);
-        mediaExt = mediaExt.toLowerCase();
-    }
+  // Get the media file's extension
+  let mediaExtIdx = mediaName.lastIndexOf(".") + 1;
+  let mediaExt;
+  if (mediaExtIdx !== 0) {
+    mediaExt = mediaName.slice(mediaExtIdx);
+    mediaExt = mediaExt.toLowerCase();
+  }
 
-    // Tailor response based on media type inferred from media file's extension
-    if (mediaExt === undefined) {
-        // No extension present in provided name
+  // Tailor response based on media type inferred from media file's extension
+  if (mediaExt === undefined) {
+    // No extension present in provided name
+    return {
+      status: 400,
+      stream: null,
+      headers: null,
+    };
+  } else if (imageMap.get(mediaExt) !== undefined) {
+    // Image file
+
+    // Get file from storage
+    let data;
+    try {
+      data = await storageConnector.getMediaNormal(
+        bucketName,
+        mediaName,
+        start
+      );
+
+      if (
+        data["$metadata"].httpStatusCode !== 200 &&
+        data["$metadata"].httpStatusCode !== 206
+      ) {
         return {
-            status: 400,
-            stream: null,
-            headers: null,
+          status: data["$metadata"].httpStatusCode,
+          stream: null,
+          headers: null,
         };
-    } else if (imageMap.get(mediaExt) !== undefined) {
-        // Image file
-
-        // Get file from storage
-        let data;
-        try {
-            data = await storageConnector.getMediaNormal(
-                bucketName,
-                mediaName,
-                start
-            );
-
-            if (
-                data["$metadata"].httpStatusCode !== 200 &&
-                data["$metadata"].httpStatusCode !== 206
-            ) {
-                return {
-                    status: data["$metadata"].httpStatusCode,
-                    stream: null,
-                    headers: null,
-                };
-            }
-        } catch (err) {
-            console.error(err);
-            return {
-                status: 500,
-                stream: null,
-                headers: null,
-            };
-        }
-
-        let result = {
-            status: data["$metadata"].httpStatusCode,
-            stream: data.Body,
-            headers: {
-                "Content-Type": imageMap.get(mediaExt),
-            },
-        };
-        return result;
-    } else {
-        // All other media type (video OR audio)
-
-        // Determine media file size
-        let mediaSize;
-        try {
-            mediaSize = await storageConnector.getMediaSize(
-                bucketName,
-                mediaName
-            );
-            if (mediaSize === null) {
-                console.log("Media not found. ");
-                return {
-                    status: 404,
-                    stream: null,
-                    headers: null,
-                };
-            }
-        } catch (err) {
-            console.error(err);
-            return {
-                status: 500,
-                stream: null,
-                headers: null,
-            };
-        }
-
-        // Determine end byte of file chunking byte-range
-        let end = Math.min(start + chunkSize, mediaSize - 1);
-
-        // Retrieve file chunk
-        let data;
-        try {
-            data = await storageConnector.getMediaNormal(
-                bucketName,
-                mediaName,
-                start,
-                end
-            );
-
-            if (
-                data["$metadata"].httpStatusCode !== 200 &&
-                data["$metadata"].httpStatusCode !== 206
-            ) {
-                return {
-                    status: data["$metadata"].httpStatusCode,
-                    stream: null,
-                    headers: null,
-                };
-            }
-        } catch (err) {
-            console.error(err);
-            return {
-                status: 500,
-                stream: null,
-                headers: null,
-            };
-        }
-
-        // Tailor response depending on whether the file is video or audio
-        if (videoMap.get(mediaExt) !== undefined) {
-            // Video file
-            let contentLength = end - start + 1;
-            let contentType = videoMap.get(mediaExt);
-
-            let result = {
-                status: data["$metadata"].httpStatusCode,
-                stream: data.Body,
-                headers: {
-                    "Content-Range": `bytes ${start}-${end}/${mediaSize}`,
-                    "Accept-Ranges": "bytes",
-                    "Content-Length": contentLength,
-                    "Content-Type": contentType,
-                },
-            };
-            return result;
-        } else if (audioMap.get(mediaExt) !== undefined) {
-            // Audio file
-            let contentLength = end - start + 1;
-            let contentType = audioMap.get(mediaExt);
-
-            let result = {
-                status: data["$metadata"].httpStatusCode,
-                stream: data.Body,
-                headers: {
-                    "Content-Range": `bytes ${start}-${end}/${mediaSize}`,
-                    "Accept-Ranges": "bytes",
-                    "Content-Length": contentLength,
-                    "Content-Type": contentType,
-                },
-            };
-            return result;
-        } else {
-            return {
-                status: 500,
-                stream: null,
-                headers: null,
-            };
-        }
+      }
+    } catch (err) {
+      console.error(err);
+      return {
+        status: 500,
+        stream: null,
+        headers: null,
+      };
     }
+
+    let result = {
+      status: data["$metadata"].httpStatusCode,
+      stream: data.Body,
+      headers: {
+        "Content-Type": imageMap.get(mediaExt),
+      },
+    };
+    return result;
+  } else {
+    // All other media type (video OR audio)
+
+    // Determine media file size
+    let mediaSize;
+    try {
+      mediaSize = await storageConnector.getMediaSize(bucketName, mediaName);
+      if (mediaSize === null) {
+        console.log("Media not found. ");
+        return {
+          status: 404,
+          stream: null,
+          headers: null,
+        };
+      }
+    } catch (err) {
+      console.error(err);
+      return {
+        status: 500,
+        stream: null,
+        headers: null,
+      };
+    }
+
+    // Determine end byte of file chunking byte-range
+    let end = Math.min(start + chunkSize, mediaSize - 1);
+
+    // Retrieve file chunk
+    let data;
+    try {
+      data = await storageConnector.getMediaNormal(
+        bucketName,
+        mediaName,
+        start,
+        end
+      );
+
+      if (
+        data["$metadata"].httpStatusCode !== 200 &&
+        data["$metadata"].httpStatusCode !== 206
+      ) {
+        return {
+          status: data["$metadata"].httpStatusCode,
+          stream: null,
+          headers: null,
+        };
+      }
+    } catch (err) {
+      console.error(err);
+      return {
+        status: 500,
+        stream: null,
+        headers: null,
+      };
+    }
+
+    // Tailor response depending on whether the file is video or audio
+    if (videoMap.get(mediaExt) !== undefined) {
+      // Video file
+      let contentLength = end - start + 1;
+      let contentType = videoMap.get(mediaExt);
+
+      let result = {
+        status: data["$metadata"].httpStatusCode,
+        stream: data.Body,
+        headers: {
+          "Content-Range": `bytes ${start}-${end}/${mediaSize}`,
+          "Accept-Ranges": "bytes",
+          "Content-Length": contentLength,
+          "Content-Type": contentType,
+        },
+      };
+      return result;
+    } else if (audioMap.get(mediaExt) !== undefined) {
+      // Audio file
+      let contentLength = end - start + 1;
+      let contentType = audioMap.get(mediaExt);
+
+      let result = {
+        status: data["$metadata"].httpStatusCode,
+        stream: data.Body,
+        headers: {
+          "Content-Range": `bytes ${start}-${end}/${mediaSize}`,
+          "Accept-Ranges": "bytes",
+          "Content-Length": contentLength,
+          "Content-Type": contentType,
+        },
+      };
+      return result;
+    } else {
+      return {
+        status: 500,
+        stream: null,
+        headers: null,
+      };
+    }
+  }
 };
 
 /**
@@ -668,130 +695,141 @@ exports.getMediaNormalHard = async function (
  * @returns {{status: number, stream: ReadableStream, headers: Object<string, *>}} The Response to use in the REST Response.
  */
 exports.getMediaNormalById = function (bucketId, mediaId, chunkSize, start) {
-    let result = {
-        status: null,
-        stream: null,
-        headers: null,
-    };
-    let mediaPath;
-    let mediaSize;
-    let bucketName;
-    let mediaName;
-    db.get(
-        "SELECT * FROM bucket WHERE id = $id",
-        { $id: bucketId },
-        (err, row) => {
-            if (err) {
-                console.error(err);
-                result.status = 500;
-            } else if (row) {
-                bucketName = row.name;
-                mediaPath = row.path;
-                mediaPath = mediaPath.replace(/\//gi, "\\/\\");
-            } else {
-                result.status = 404;
-            }
-        }
-    );
+  let result = {
+    status: null,
+    stream: null,
+    headers: null,
+  };
+  let mediaPath;
+  let mediaSize;
+  let bucketName;
+  let mediaName;
+  try {
+    const stmt = db.prepare("SELECT * FROM bucket WHERE id = @id");
+    const row = stmt.get({ id: bucketId });
 
-    let mediaExt;
-    if (bucketName) {
-        db.get(
-            "SELECT * FROM media WHERE bucket_id = $bucket_id AND id = $id",
-            { $bucket_id: bucketId, $id: mediaId },
-            (err, row) => {
-                if (err) {
-                    console.error(err);
-                    result.status = 500;
-                } else if (row) {
-                    mediaName = row.name;
-                    mediaPath += row.path.replace(/\//gi, "\\/\\");
-                    mediaSize = row.size;
-                    mediaExt = row.extension;
-                } else {
-                    result.status = 404;
-                }
-            }
+    if (row === undefined) {
+      result.status = 404;
+    } else {
+      bucketName = row.name;
+      mediaPath = row.path;
+      mediaPath = mediaPath.replace(/\//gi, "\\/\\");
+    }
+  } catch (err) {
+    console.error(err);
+    result.status = 500;
+  }
+
+  let mediaExt;
+  if (bucketName) {
+    try {
+      const stmt = db.prepare(
+        "SELECT * FROM media WHERE bucket_id = @bucket_id AND id = @id"
+      );
+      const row = stmt.get({ bucket_id: bucketId, id: mediaId });
+
+      if (row === undefined) {
+        result.status = 404;
+      } else {
+        mediaName = row.name;
+        mediaPath += row.path.replace(/\//gi, "\\/\\");
+        mediaSize = row.size;
+        mediaExt = row.extension;
+      }
+    } catch (err) {
+      console.error(err);
+      result.status = 500;
+    }
+  }
+
+  if (mediaName) {
+    if (imageMap.get(mediaExt) !== undefined) {
+      try {
+        const stmt = db.prepare(
+          "SELECT * FROM local_store WHERE media_id = @media_id"
         );
-    }
+        const row = stmt.get({ media_id: mediaId });
 
-    if (mediaName) {
-        if (imageMap.get(mediaExt) !== undefined) {
-            db.get(
-                "SELECT * FROM local_store WHERE media_id = $media_id",
-                { $media_id: mediaId },
-                (err, row) => {
-                    if (err) {
-                        console.error(err);
-                        result.status = 500;
-                    } else if (row) {
-                        let dataStream = fs.createReadStream(
-                            `server/media/${mediaPath}.${mediaExt}`
-                        );
-                        result.stream = dataStream;
-
-                        result.headers = {
-                            "Content-Type": imageMap.get(mediaExt),
-                        };
-
-                        result.status = 200;
-                    } else {
-                        result.status = 404;
-                    }
-                }
-            );
+        if (row === undefined) {
+          result.status = 404;
         } else {
-            if (mediaSize === null) {
-                mediaSize = storageConnector.getMediaSize(
-                    bucketName,
-                    mediaName
-                );
-                if (mediaSize === null) {
-                    console.log("Media not present in storage. ");
-                    result.status = 404;
+          let dataStream = fs.createReadStream(
+            `server/media/${mediaPath}.${mediaExt}`
+          );
+          result.stream = dataStream;
 
-                    return result;
-                }
-            }
-            let end = Math.min(start + chunkSize, mediaSize - 1);
-            db.get(
-                "SELECT * FROM local_store WHERE media_id = $media_id AND (chunk_size = $media_size OR chunk_size > $end)",
-                { $media_id: mediaId, $media_size: mediaSize, $end: end },
-                (err, row) => {
-                    if (err) {
-                        console.error(err);
-                        result.status = 500;
-                    } else if (row) {
-                        let contentType;
-                        if (videoMap.get(mediaExt) !== undefined) {
-                            contentType = videoMap.get(mediaExt);
-                        } else if (audioMap.get(mediaExt) !== undefined) {
-                            contentType = audioMap.get(mediaExt);
-                        } else {
-                            result.status = 500;
-                            return;
-                        }
-                        let contentLength = end - start + 1;
-                        let dataStream = fs.createReadStream(
-                            `server/media/${mediaPath}.${mediaExt}`,
-                            { start, end }
-                        );
-                        result.stream = dataStream;
-                        result.headers = {
-                            "Content-Range": `bytes ${start}-${end}/${mediaSize}`,
-                            "Accept-Ranges": "bytes",
-                            "Content-Length": contentLength,
-                            "Content-Type": contentType,
-                        };
+          result.headers = {
+            "Content-Type": imageMap.get(mediaExt),
+          };
 
-                        result.status = 206;
-                    } else {
-                        result.status = 404;
-                    }
-                }
-            );
+          result.status = 200;
+
+          const stmt = db.prepare("UPDATE media SET count = count + 1 WHERE id = @id");
+          stmt.run({ id: mediaId });
         }
-    }
+      } catch (err) {
+        console.error(err);
+        result.status = 500;
+      }
+    } else {
+      if (mediaSize === null) {
+        mediaSize = storageConnector.getMediaSize(bucketName, mediaName);
+        if (mediaSize === null) {
+          console.log("Media not present in storage. ");
+          result.status = 404;
 
-    return result;
+          return result;
+        }
+      }
+      let end = Math.min(start + chunkSize, mediaSize - 1);
+      try {
+        const stmt = db.prepare(
+          "SELECT * FROM local_store WHERE media_id = @media_id AND (chunk_size = @media_size OR chunk_size > @end)"
+        );
+        const row = stmt.get({
+          media_id: mediaId,
+          media_size: mediaSize,
+          end: end,
+        });
+
+        if (row === undefined) {
+          result.status = 404;
+        } else {
+          let contentType;
+          if (videoMap.get(mediaExt) !== undefined) {
+            contentType = videoMap.get(mediaExt);
+          } else if (audioMap.get(mediaExt) !== undefined) {
+            contentType = audioMap.get(mediaExt);
+          } else {
+            result.status = 500;
+            return;
+          }
+          let contentLength = end - start + 1;
+          let dataStream = fs.createReadStream(
+            `server/media/${mediaPath}.${mediaExt}`,
+            { start, end }
+          );
+          result.stream = dataStream;
+          result.headers = {
+            "Content-Range": `bytes ${start}-${end}/${mediaSize}`,
+            "Accept-Ranges": "bytes",
+            "Content-Length": contentLength,
+            "Content-Type": contentType,
+          };
+
+          result.status = 206;
+
+          if (start === 0) {
+            const stmt = db.prepare("UPDATE media SET count = count + 1 WHERE id = @id");
+            stmt.run({ id: mediaId });
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        result.status = 500;
+      }
+    }
+  }
+
+  return result;
 };

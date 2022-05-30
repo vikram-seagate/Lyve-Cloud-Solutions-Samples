@@ -1,11 +1,11 @@
 const {
-    S3Client,
-    ListBucketsCommand,
-    ListObjectsCommand,
-    HeadObjectCommand,
-    GetObjectCommand,
-    CreateBucketCommand,
-    PutObjectCommand,
+  S3Client,
+  ListBucketsCommand,
+  ListObjectsCommand,
+  HeadObjectCommand,
+  GetObjectCommand,
+  CreateBucketCommand,
+  PutObjectCommand,
 } = require("@aws-sdk/client-s3");
 
 // Initialise the needed config values from env variables
@@ -16,13 +16,13 @@ const region = process.env.AWS_REGION;
 
 // Setup config object
 const configs = {
-    endpoint: "https://s3.ap-southeast-1.lyvecloud.seagate.com",
-    // endpoint: endpoint,
-    credentials: {
-        accessKeyId: accessKeyId,
-        secretAccessKey: secretAccessKey,
-    },
-    region: region,
+  endpoint: "https://s3.ap-southeast-1.lyvecloud.seagate.com",
+  // endpoint: endpoint,
+  credentials: {
+    accessKeyId: accessKeyId,
+    secretAccessKey: secretAccessKey,
+  },
+  region: region,
 };
 
 // Instantiate the S3 Client object
@@ -32,11 +32,19 @@ const client = new S3Client(configs);
 /**
  * @module storageConnector
  *
+ * @method getStats
  * @method getAllBuckets
  * @method getAllMedia
  * @method getMediaSize
  * @method getMediaNormal
  */
+
+exports.getStats = function () {
+  return {
+    endpoint: configs.endpoint,
+    region: configs.region
+  };
+}
 
 /**
  * Gets a list of all the buckets from S3.
@@ -50,13 +58,13 @@ const client = new S3Client(configs);
  * @returns {Promise<{"$metadata": {httpStatusCode: number}, Buckets: Object[]}>} Response from ListBucketsCommand.
  */
 exports.getAllBuckets = async function () {
-    try {
-        let data = await client.send(new ListBucketsCommand({}));
-        return data;
-    } catch (err) {
-        console.error(err);
-        throw err;
-    }
+  try {
+    let data = await client.send(new ListBucketsCommand({}));
+    return data;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 };
 
 /**
@@ -73,38 +81,36 @@ exports.getAllBuckets = async function () {
  * @returns {Promise<{"$metadata": {httpStatusCode: number}, Contents: Object[]}>} Response from ListObjectsCommand.
  */
 exports.getAllMedia = async function (bucketName) {
-    try {
-        let truncated = true;
-        let pageMarker;
-        let details = {
-            Bucket: bucketName,
-        };
-        let data = [];
-        while (truncated) {
-            try {
-                const response = await client.send(
-                    new ListObjectsCommand(details)
-                );
-                response.Contents.forEach((item) => {
-                    data.push(item);
-                });
-                truncated = response.IsTruncated;
-                if (truncated) {
-                    pageMarker = response.Contents.slice(-1)[0].Key;
-                    details.Marker = pageMarker;
-                } else {
-                    response.Contents = data;
-                    return response;
-                }
-            } catch (err) {
-                console.log("Error", err);
-                truncated = false;
-            }
+  try {
+    let truncated = true;
+    let pageMarker;
+    let details = {
+      Bucket: bucketName,
+    };
+    let data = [];
+    while (truncated) {
+      try {
+        const response = await client.send(new ListObjectsCommand(details));
+        response.Contents.forEach((item) => {
+          data.push(item);
+        });
+        truncated = response.IsTruncated;
+        if (truncated) {
+          pageMarker = response.Contents.slice(-1)[0].Key;
+          details.Marker = pageMarker;
+        } else {
+          response.Contents = data;
+          return response;
         }
-    } catch (err) {
-        console.error(err);
-        throw err;
+      } catch (err) {
+        console.log("Error", err);
+        truncated = false;
+      }
     }
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 };
 
 /**
@@ -120,21 +126,21 @@ exports.getAllMedia = async function (bucketName) {
  * @returns {Promise<?number>} The ContentLength value from the Response of the HeadObjectCommand if the Response has a 200 status code, `null` otherwise.
  */
 exports.getMediaSize = async function (bucketName, mediaName) {
-    try {
-        let details = {
-            Bucket: bucketName,
-            Key: mediaName,
-        };
-        let data = await client.send(new HeadObjectCommand(details));
-        if (data["$metadata"].httpStatusCode !== 200) {
-            return null;
-        } else {
-            return data.ContentLength;
-        }
-    } catch (err) {
-        console.error(err);
-        throw err;
+  try {
+    let details = {
+      Bucket: bucketName,
+      Key: mediaName,
+    };
+    let data = await client.send(new HeadObjectCommand(details));
+    if (data["$metadata"].httpStatusCode !== 200) {
+      return null;
+    } else {
+      return data.ContentLength;
     }
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 };
 
 /**
@@ -156,39 +162,39 @@ exports.getMediaSize = async function (bucketName, mediaName) {
  * @returns {Promise<{"$metadata": {httpStatusCode: number}, Body: ReadableStream}>} The Response of the GetObjectCommand.
  */
 exports.getMediaNormal = async function (
-    bucketName,
-    mediaName,
-    start,
-    end = null
+  bucketName,
+  mediaName,
+  start,
+  end = null
 ) {
-    try {
-        // const streamToBuffer = (stream) => {
-        //     new Promise((resolve, reject) => {
-        //         const chunks = [];
-        //         stream.on("data", (chunk) => chunks.push(chunk));
-        //         stream.on("error", reject);
-        //         stream.on("end", () => resolve(new Buffer.concat(chunks)));
-        //     });
-        // };
-        let details;
-        if (end === null) {
-            details = {
-                Bucket: bucketName,
-                Key: mediaName,
-            };
-        } else {
-            details = {
-                Bucket: bucketName,
-                Key: mediaName,
-                Range: `bytes=${String(start)}-${String(end)}`,
-            };
-        }
-        let data = await client.send(new GetObjectCommand(details));
-        return data;
-    } catch (err) {
-        console.error(err);
-        throw err;
+  try {
+    // const streamToBuffer = (stream) => {
+    //     new Promise((resolve, reject) => {
+    //         const chunks = [];
+    //         stream.on("data", (chunk) => chunks.push(chunk));
+    //         stream.on("error", reject);
+    //         stream.on("end", () => resolve(new Buffer.concat(chunks)));
+    //     });
+    // };
+    let details;
+    if (end === null) {
+      details = {
+        Bucket: bucketName,
+        Key: mediaName,
+      };
+    } else {
+      details = {
+        Bucket: bucketName,
+        Key: mediaName,
+        Range: `bytes=${String(start)}-${String(end)}`,
+      };
     }
+    let data = await client.send(new GetObjectCommand(details));
+    return data;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 };
 
 // async function postBucket(bucketName) {
@@ -220,6 +226,11 @@ exports.getMediaNormal = async function (
 //     }
 // }
 
-exports.getAllMedia("s-mediastore")
-.then((data) => { console.log(data); })
-.catch((err) => { console.error(err); });
+exports
+  .getAllMedia("s-mediastore")
+  .then((data) => {
+    console.log(data);
+  })
+  .catch((err) => {
+    console.error(err);
+  });

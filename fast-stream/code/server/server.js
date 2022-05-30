@@ -1,16 +1,19 @@
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const streamingRouter = require('./routes/streaming');
+const express = require("express");
+const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
+const streamingRouter = require("./routes/streaming");
 
 const app = express();
 
+app.use(cors());
+
 // app.get("/api/video", (req, res) => {
-//     // Ensure `Range` header present 
+//     // Ensure `Range` header present
 //     const range = req.get("Range");
 //     if (!range) {
 //         res.status(400).json({
-//             "code": 400, 
+//             "code": 400,
 //             "message": "`range` header not present. "
 //         });
 //     } else {
@@ -20,7 +23,7 @@ const app = express();
 //         const videoSize = fs.statSync(videoPath).size;
 
 //         // Parse Range, e.g.: "bytes=32324-"
-//         const CHUNK_SIZE = 2 * (10 ** 6); // 1MB 
+//         const CHUNK_SIZE = 2 * (10 ** 6); // 1MB
 //         const start = Number(range.replace(/\D/g, ""));
 //         const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
 
@@ -45,8 +48,8 @@ const app = express();
 //     }
 // })
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-app.use('/', streamingRouter);
+app.use("/", streamingRouter);
 
 module.exports = app;
