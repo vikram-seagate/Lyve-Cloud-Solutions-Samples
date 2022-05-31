@@ -1,4 +1,5 @@
 const mediaManager = require("../modules/mediaManager");
+const { imageMap } = require("../modules/MIMEMap");
 
 /**
  * @module streamingController
@@ -351,18 +352,24 @@ exports.listMediaById = function (req, res, next) {
   return;
 };
 
-exports.getMediaNormal = async function (req, res, next) {
-  // Ensure `Range` header present
-  const range = req.get("Range");
-  if (!range) {
-    res.status(400).json({
-      code: 400,
-      message: "`Range` header not present. ",
-    });
-    res.end();
-    return;
+/**
+ * A function that helps with removing or extracting the extension from a filename.
+ *
+ * @param {string} filename The name of the file whose extension is to be removed.
+ * @param {boolean} returnExt Whether to return the extension or the name of the file without the extension.
+ *
+ * @returns {string} The requested part of the filename.
+ */
+function removeExt(filename, returnExt = true) {
+  let extIdx = filename.lastIndexOf(".");
+  if (returnExt) {
+    return filename.slice(extIdx + 1);
+  } else {
+    return filename.slice(0, extIdx);
   }
+}
 
+exports.getMediaNormal = async function (req, res, next) {
   // Retrieve neccessary request parameter(s)
   let bucketName;
   let mediaName;
@@ -388,6 +395,23 @@ exports.getMediaNormal = async function (req, res, next) {
     res.json(results);
     res.end();
     return;
+  }
+
+  let ext = removeExt(mediaName);
+  let range;
+  if (imageMap.get(ext) === undefined) {
+    // Ensure `Range` header present
+    range = req.get("Range");
+    if (!range) {
+      res.status(400).json({
+        code: 400,
+        message: "`Range` header not present. ",
+      });
+      res.end();
+      return;
+    }
+  } else {
+    range = "0";
   }
 
   // Parse `Range` header, e.g.: "bytes=32324-"
@@ -481,17 +505,6 @@ exports.getMediaNormal = async function (req, res, next) {
 };
 
 exports.getMediaNormalHard = async function (req, res, next) {
-  // Ensure `Range` header present
-  const range = req.get("Range");
-  if (!range) {
-    res.status(400).json({
-      code: 400,
-      message: "`Range` header not present. ",
-    });
-    res.end();
-    return;
-  }
-
   // Retrieve neccessary request parameter(s)
   let bucketName;
   let mediaName;
@@ -518,6 +531,23 @@ exports.getMediaNormalHard = async function (req, res, next) {
     res.json(results);
     res.end();
     return;
+  }
+
+  let ext = removeExt(mediaName);
+  let range;
+  if (imageMap.get(ext) === undefined) {
+    // Ensure `Range` header present
+    range = req.get("Range");
+    if (!range) {
+      res.status(400).json({
+        code: 400,
+        message: "`Range` header not present. ",
+      });
+      res.end();
+      return;
+    }
+  } else {
+    range = "0";
   }
 
   // Parse `Range` headers, e.g.: "bytes=32324-"

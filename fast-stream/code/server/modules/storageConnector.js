@@ -7,6 +7,7 @@ const {
   CreateBucketCommand,
   PutObjectCommand,
 } = require("@aws-sdk/client-s3");
+const fs = require("fs");
 
 // Initialise the needed config values from env variables
 const endpoint = process.env.AWS_ENDPOINT;
@@ -226,11 +227,41 @@ exports.getMediaNormal = async function (
 //     }
 // }
 
-exports
-  .getAllMedia("s-mediastore")
-  .then((data) => {
-    console.log(data);
-  })
-  .catch((err) => {
-    console.error(err);
-  });
+// postMedia("s-mediastore", "170724_15_Setangibeach.mp4", "170724_15_Setangibeach.mp4")
+// .then((res) => {
+//   console.log("1");
+//   postMedia("s-mediastore", "kier-in-sight-ioSyqyVQDdk-unsplash.jpeg", "kier-in-sight-ioSyqyVQDdk-unsplash.jpeg")
+//   .then((res) => {
+//     console.log("2");
+//     postMedia("s-mediastore", "slow-trap-18565.mp3", "slow-trap-18565.mp3")
+//     .then((res) => {
+//       console.log("Done!");
+//     })
+//     .catch((err) => {
+//       console.error(err);
+//     });
+//   })
+//   .catch((err) => {
+//     console.error(err);
+//   });
+// })
+// .catch((err) => {
+//   console.error(err);
+// });
+
+// postMedia("s-mediastore", "setangi.mp4", "setangi.mp4")
+// .then((res) => {
+//   console.log("Done!");
+// })
+// .catch((err) => {
+//   console.error(err);
+// });
+
+// exports
+//   .getAllMedia("s-mediastore")
+//   .then((data) => {
+//     console.log(data);
+//   })
+//   .catch((err) => {
+//     console.error(err);
+//   });
