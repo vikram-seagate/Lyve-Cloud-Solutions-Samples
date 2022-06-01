@@ -191,3 +191,9 @@ This folder contains the API documentation and presentation file.
 
 ### `/images`
 This folder contains all the images for README.md.
+
+## Attributions
+Stock footage provided by Videvo, downloaded from [www.videvo.net](https://www.videvo.net/)
+Stock audio provided by Anton Vlasov, downloaded from [www.pixabay.com](https://pixabay.com/)
+Photo by Kier In Sight on [Unsplash](https://unsplash.com/photos/ioSyqyVQDdk?utm_source=unsplash&utm_medium=referral&utm_content=creditShareLink)
+360 video icons created by Hazicon - [Flaticon](https://www.flaticon.com/free-icons/360-video)
