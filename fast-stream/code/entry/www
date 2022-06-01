@@ -6,6 +6,7 @@
 const app = require("../server/server");
 const http = require("http");
 const updateStore = require("../server/modules/updateStore");
+const errorLogger = require("../server/modules/errorLogger");
 
 /**
  * Function to get a port number from the argument
@@ -43,11 +44,11 @@ function onError(err) {
     // Handles specific listen errors with friendly messages
     switch (err.code) {
         case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
+            errorLogger.log(bind + ' requires elevated privileges');
             process.exit(1);
             break;
         case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
+            errorLogger.log(bind + ' is already in use');
             process.exit(1);
             break;
         default:

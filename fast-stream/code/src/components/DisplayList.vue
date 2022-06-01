@@ -233,7 +233,7 @@ export default {
       centerPageNav: false,
       items: [],
       pages: 0,
-      hasPagination: false,
+      hasPagination: false, 
       bucketName: "",
     };
   },
@@ -241,10 +241,9 @@ export default {
     if (this.target === "bucket") {
       // TODO
       axios
-        .get("http://localhost:5000/api/hard/buckets")
+        .get(`${location.origin}/api/hard/buckets`)
         .then((res) => {
           this.items = res.data.data;
-          console.log(res.data.data);
         })
         .catch((err) => {
           console.error(err);
@@ -256,7 +255,7 @@ export default {
 
 // TODO
       axios
-        .get(`http://localhost:5000/api/hard/bucket/${encodeURI(this.bucketName)}/media`, {
+        .get(`${location.origin}/api/hard/bucket/${encodeURI(this.bucketName)}/media`, {
           params: { page: this.currentPage, limit: 10 },
         })
         .then((res) => {
@@ -291,16 +290,16 @@ export default {
     },
     copyAPI(type: string, itemName: string): void {
       if (type === "media") {
+        // `http://localhost:5000/api/hard/bucket/${encodeURI( TODO
         navigator.clipboard.writeText(
-          // `${location.origin}/api/bucket/${encodeURI( TODO
-          `http://localhost:5000/api/hard/bucket/${encodeURI(
+          `${location.origin}/api/hard/bucket/${encodeURI( 
             this.bucketName
           )}/media/${encodeURI(itemName)}`
         );
       } else if (type === "bucket") {
+        // `http://localhost:5000/api/hard/bucket/${encodeURI(itemName)}` TODO
         navigator.clipboard.writeText(
-          // `${location.origin}/api/bucket/${encodeURI(itemName)}` TODO
-          `http://localhost:5000/api/hard/bucket/${encodeURI(itemName)}`
+          `${location.origin}/api/hard/bucket/${encodeURI(itemName)}`
         );
       }
     },

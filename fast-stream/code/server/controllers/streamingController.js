@@ -425,7 +425,6 @@ exports.getMediaNormal = async function (req, res, next) {
     chunkSize,
     start
   );
-  console.log(mediaData);
 
   // Failed to retrieve from cache
   if (mediaData.status === 500 || mediaData.status === 404) {

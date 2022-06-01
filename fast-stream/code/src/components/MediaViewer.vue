@@ -149,21 +149,21 @@ export default {
 
     if (imageMap.get(ext) !== undefined) {
       this.isImage = true;
-      // this.mediaLink = `${location.origin}/api/bucket/${encodeURI( TODO
-      this.mediaLink = `http://localhost:5000/api/hard/bucket/${encodeURI(
+      // this.mediaLink = `http://localhost:5000/api/hard/bucket/${encodeURI( TODO
+      this.mediaLink = `${location.origin}/api/hard/bucket/${encodeURI( 
         this.bucketName
       )}/media/${encodeURI(this.mediaName)}`;
     } else if (videoMap.get(ext) !== undefined) {
       this.isVideo = true;
-      // this.mediaLink = `${location.origin}/api/bucket/${encodeURI( TODO
-      this.mediaLink = `http://localhost:5000/api/hard/bucket/${encodeURI(
+      // this.mediaLink = `http://localhost:5000/api/hard/bucket/${encodeURI( TODO
+      this.mediaLink = `${location.origin}/api/hard/bucket/${encodeURI(
         this.bucketName
       )}/media/${encodeURI(this.mediaName)}`;
       this.mediaType = videoMap.get(ext);
     } else if (audioMap.get(ext) !== undefined) {
       this.isAudio = true;
-      // this.mediaLink = `${location.origin}/api/bucket/${encodeURI( TODO
-      this.mediaLink = `http://localhost:5000/api/hard/bucket/${encodeURI(
+      // this.mediaLink = `http://localhost:5000/api/hard/bucket/${encodeURI( TODO
+      this.mediaLink = `${location.origin}/api/hard/bucket/${encodeURI(
         this.bucketName
       )}/media/${encodeURI(this.mediaName)}`;
       this.mediaType = audioMap.get(ext);

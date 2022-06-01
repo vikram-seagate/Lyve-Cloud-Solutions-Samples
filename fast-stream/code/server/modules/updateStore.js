@@ -3,6 +3,7 @@ const fs = require("fs");
 const Database = require("better-sqlite3");
 const storageConnector = require("./storageConnector");
 const { imageMap } = require("./MIMEMap");
+const errorLogger = require("./errorLogger");
 
 // Instantiate the SQLite DB connection
 
@@ -55,13 +56,13 @@ let db;
 try {
   db = new Database("server/data/faststream.db");
 } catch (err) {
-  console.error(err);
+  errorLogger.log(err);
 }
 
 try {
   createTables(db);
 } catch (err) {
-  console.error(err);
+  errorLogger.log(err);
 }
 
 // All operations of the worker that updates the local cache and DB at set intervals below
@@ -85,13 +86,13 @@ async function retrieveBuckets() {
 
     // Error in retrieval
     if (data["$metadata"].httpStatusCode !== 200) {
-      console.log("Error in retrieveBuckets");
+      errorLogger.log("Error in retrieveBuckets");
       throw new Error("Error in retrieveBuckets");
     } else {
       return data.Buckets;
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
 }
@@ -120,7 +121,7 @@ function updateBuckets(buckets) {
       });
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
 
@@ -147,14 +148,14 @@ function updateBuckets(buckets) {
       const stmt = db.prepare("DELETE FROM bucket WHERE name = @name AND path = @path");
       stmt.run({ name: bucket.name, path: bucket.path });
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       throw err;
     }
     fs.rm(
       `server/media/${bucket.path.replace(/\//g, "\\/\\")}`,
       { recursive: true },
       (err) => {
-        console.error(err);
+        errorLogger.log(err);
         dbErr = err;
       }
     );
@@ -168,14 +169,14 @@ function updateBuckets(buckets) {
       const stmt = db.prepare("INSERT INTO bucket (name, path) VALUES (@name, @path)");
       stmt.run({ name: bucket.name, path: bucket.path });
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       throw err;
     }
     fs.mkdir(
       `server/media/${bucket.path.replace(/\//g, "\\/\\")}`,
       { recursive: true },
       (err) => {
-        console.error(err);
+        errorLogger.log(err);
         dbErr = err;
       }
     );
@@ -203,13 +204,13 @@ async function retrieveMedia(bucket) {
 
     // Error in retrieval
     if (data["$metadata"].httpStatusCode !== 200) {
-      console.log("Error in retrieveMedia");
+      errorLogger.log("Error in retrieveMedia");
       throw new Error("Error in retrieveMedia");
     } else {
       return data.Contents;
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
 }
@@ -254,14 +255,14 @@ function updateMedia(bucket, media) {
       let err = new Error(
         "The bucket specified does not exist in local cache. "
       );
-      console.error(err);
+      errorLogger.log(err);
       throw err;
     } else {
       bucketId = row.id;
       bucketPath = row.path;
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
   let currentMedia = new Map();
@@ -279,7 +280,7 @@ function updateMedia(bucket, media) {
       });
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
 
@@ -314,14 +315,14 @@ function updateMedia(bucket, media) {
         bucket_id: bucketId,
       });
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       throw err;
     }
     fs.rm(
       `server/media/${bucketPath.replace(/\//g, "\\/\\")}/${medium.name}`,
       { force: true, recursive: true },
       (err) => {
-        console.error(err);
+        errorLogger.log(err);
         dbErr = err;
       }
     );
@@ -341,7 +342,7 @@ function updateMedia(bucket, media) {
         bucket_id: bucketId,
       });
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       throw err;
     }
   }
@@ -365,13 +366,13 @@ function computeMediaScores() {
 
     totalCount = row.total_count;
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
   // Get the available media's details and their scores
   const mediaScores = [];
   try {
-    const stmt = db.prepare("SELECT id, name, path, extension, size, bucket_id, (count / CAST(@total_count as REAL)) AS score FROM media ORDER BY score DESC");
+    const stmt = db.prepare("SELECT id, name, path, extension, size, bucket_id, (count / CAST(@total_count as REAL)) AS score FROM media ORDER BY score DESC"); // NOTE
     const rows = stmt.all({ total_count: totalCount });
 
     for (let row of rows) {
@@ -386,7 +387,7 @@ function computeMediaScores() {
       });
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
   // Filter for the media covering 80% of consumer usage
@@ -444,7 +445,7 @@ function getBucketName(bucketId) {
 
     return row.name;
   } catch (err) {
-    console.error(err); 
+    errorLogger.log(err); 
     throw err;
   }
 }
@@ -473,7 +474,7 @@ function downloadMedia(media) {
       currentMedia.set(row.media_id, row);
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
 
@@ -492,21 +493,20 @@ function downloadMedia(media) {
 
   // Delete media
   for (let medium of toDelete) {
-    console.log(toDelete);
     try {
       const stmt = db.prepare("DELETE FROM local_store WHERE id = @id");
       stmt.run({
         id: medium.id
       });
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       throw err;
     }
     fs.rm(
       `server/media/${getBucketName(medium.bucket_id).replace(/\//g, "\\/\\")}/${medium.name}`,
       { force: true, recursive: true },
       (err) => {
-        console.error(err);
+        errorLogger.log(err);
         dbErr = err;
       }
     );
@@ -525,7 +525,7 @@ function downloadMedia(media) {
         res.Body.pipe(stream);
       })
       .catch((err) => {
-        console.error(err);
+        errorLogger.log(err);
         throw err;
       });
 
@@ -537,7 +537,7 @@ function downloadMedia(media) {
         bucket_id: medium.bucket_id
       });
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       throw err;
     }
   }
@@ -562,7 +562,7 @@ exports.update = function () {
               downloadMedia(computeMediaScores());
             })
             .catch((err) => {
-              console.error(err);
+              errorLogger.log(err);
               dbErr = err;
             });
           if (dbErr) {
@@ -571,13 +571,13 @@ exports.update = function () {
         }
       })
       .catch((err) => {
-        console.error(err);
+        errorLogger.log(err);
         dbErr = err;
       });
     if (dbErr) {
       throw dbErr;
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
   }
 };

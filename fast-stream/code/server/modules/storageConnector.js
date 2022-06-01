@@ -6,19 +6,21 @@ const {
   GetObjectCommand,
   CreateBucketCommand,
   PutObjectCommand,
+  DeleteObjectCommand,
 } = require("@aws-sdk/client-s3");
 const fs = require("fs");
+const errorLogger = require("./errorLogger");
 
 // Initialise the needed config values from env variables
-const endpoint = process.env.AWS_ENDPOINT;
+const endpoint = process.env.AWS_ENDPOINT || "https://s3.ap-southeast-1.lyvecloud.seagate.com";
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-const region = process.env.AWS_REGION;
+const region = process.env.AWS_REGION || "ap-southeast-1";
 
 // Setup config object
 const configs = {
-  endpoint: "https://s3.ap-southeast-1.lyvecloud.seagate.com",
-  // endpoint: endpoint,
+  // endpoint: "https://s3.ap-southeast-1.lyvecloud.seagate.com",
+  endpoint: endpoint,
   credentials: {
     accessKeyId: accessKeyId,
     secretAccessKey: secretAccessKey,
@@ -63,7 +65,7 @@ exports.getAllBuckets = async function () {
     let data = await client.send(new ListBucketsCommand({}));
     return data;
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
 };
@@ -104,12 +106,12 @@ exports.getAllMedia = async function (bucketName) {
           return response;
         }
       } catch (err) {
-        console.log("Error", err);
+        errorLogger.log(`Error ${err}`);
         truncated = false;
       }
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
 };
@@ -139,7 +141,7 @@ exports.getMediaSize = async function (bucketName, mediaName) {
       return data.ContentLength;
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
 };
@@ -193,7 +195,7 @@ exports.getMediaNormal = async function (
     let data = await client.send(new GetObjectCommand(details));
     return data;
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     throw err;
   }
 };
@@ -227,6 +229,20 @@ exports.getMediaNormal = async function (
 //     }
 // }
 
+// async function deleteMedia(bucketName, mediaName) {
+//     try {
+//         let details = {
+//             Bucket: bucketName,
+//             Key: mediaName
+//         };
+//         let data = await client.send(new DeleteObjectCommand(details));
+//         console.log("Success >\n", data);
+//         return;
+//     } catch (err) {
+//         console.error(err);
+//     }
+// }
+
 // postMedia("s-mediastore", "170724_15_Setangibeach.mp4", "170724_15_Setangibeach.mp4")
 // .then((res) => {
 //   console.log("1");
@@ -248,20 +264,3 @@ exports.getMediaNormal = async function (
 // .catch((err) => {
 //   console.error(err);
 // });
-
-// postMedia("s-mediastore", "setangi.mp4", "setangi.mp4")
-// .then((res) => {
-//   console.log("Done!");
-// })
-// .catch((err) => {
-//   console.error(err);
-// });
-
-// exports
-//   .getAllMedia("s-mediastore")
-//   .then((data) => {
-//     console.log(data);
-//   })
-//   .catch((err) => {
-//     console.error(err);
-//   });

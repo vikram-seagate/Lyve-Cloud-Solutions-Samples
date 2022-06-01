@@ -50,7 +50,7 @@ export default {
   created(): void {
     // TODO
     axios
-      .get("http://localhost:5000/api/stats")
+      .get(`${location.origin}/api/stats`)
       .then((res) => {
         this.endpoint = res.data.data.endpoint;
         this.region = res.data.data.region;

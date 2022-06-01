@@ -3,6 +3,7 @@ const fs = require("fs");
 const Database = require("better-sqlite3");
 const storageConnector = require("./storageConnector");
 const { imageMap, audioMap, videoMap } = require("./MIMEMap");
+const errorLogger = require("./errorLogger");
 
 // Instantiate the SQLite DB connection
 
@@ -55,13 +56,13 @@ let db;
 try {
   db = new Database("server/data/faststream.db");
 } catch (err) {
-  console.error(err);
+  errorLogger.log(err);
 }
 
 try {
   createTables(db);
 } catch (err) {
-  console.error(err);
+  errorLogger.log(err);
 }
 
 // All operations of the interface that synchronises cached and non-cached data below
@@ -84,7 +85,7 @@ exports.getStats = function () {
   try {
     results = storageConnector.getStats();
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     return {
       status: 500, 
       data: null
@@ -120,7 +121,7 @@ exports.getAllBuckets = function () {
       result.status = 200;
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     result.status = 500;
   }
 
@@ -146,7 +147,7 @@ exports.getAllBucketsHard = async function () {
       };
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     return {
       status: 500,
       data: [],
@@ -197,7 +198,7 @@ exports.getAllMedia = function (bucketName, page = 1, limit = 10) {
       bucketId = row.id;
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     result.status = 500;
   }
 
@@ -221,7 +222,7 @@ exports.getAllMedia = function (bucketName, page = 1, limit = 10) {
         result.data.pages = getBucketSize(bucketId);
       }
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       result.status = 500;
     }
   }
@@ -252,7 +253,7 @@ exports.getAllMediaHard = async function (bucketName, page = 1, limit = 10) {
       };
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     return {
       status: 500,
       data: { pages: null, media: [] },
@@ -292,7 +293,7 @@ exports.getAllMediaById = function (bucketId, page, limit) {
       isBucket = true;
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     result.status = 500;
   }
 
@@ -316,7 +317,7 @@ exports.getAllMediaById = function (bucketId, page, limit) {
         result.data.pages = getBucketSize(bucketId);
       }
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       result.status = 500;
 
       return result;
@@ -358,7 +359,6 @@ exports.getMediaNormal = function (
     const row = stmt.get({ name: bucketName });
 
     if (row === undefined) {
-      console.log(result);
       result.status = 404;
     } else {
       bucketId = row.id;
@@ -366,7 +366,7 @@ exports.getMediaNormal = function (
       mediaPath = mediaPath.replace(/\//gi, "\\/\\");
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     result.status = 500;
   }
 
@@ -396,11 +396,11 @@ exports.getMediaNormal = function (
           mediaSize = row.size;
         }
       } catch (err) {
-        console.error(err);
+        errorLogger.log(err);
         result.status = 500;
       }
     } else {
-      console.error("The requested media's MIME type is not specified. ");
+      errorLogger.log("The requested media's MIME type is not specified. ");
       result.status = 400;
 
       return result;
@@ -433,14 +433,14 @@ exports.getMediaNormal = function (
           stmt.run({ id: mediaId });
         }
       } catch (err) {
-        console.error(err);
+        errorLogger.log(err);
         result.status = 500;
       }
     } else {
       if (mediaSize === null) {
         mediaSize = storageConnector.getMediaSize(bucketName, mediaName);
         if (mediaSize === null) {
-          console.error("Media not present in storage. ");
+          errorLogger.log("Media not present in storage. ");
           result.status = 404;
 
           return result;
@@ -490,7 +490,7 @@ exports.getMediaNormal = function (
           }
         }
       } catch (err) {
-        console.error(err);
+        errorLogger.log(err);
         result.status = 500;
       }
     }
@@ -567,7 +567,7 @@ exports.getMediaNormalHard = async function (
         };
       }
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       return {
         status: 500,
         stream: null,
@@ -591,7 +591,7 @@ exports.getMediaNormalHard = async function (
     try {
       mediaSize = await storageConnector.getMediaSize(bucketName, mediaName);
       if (mediaSize === null) {
-        console.log("Media not found. ");
+        errorLogger.log("Media not found. ");
         return {
           status: 404,
           stream: null,
@@ -599,7 +599,7 @@ exports.getMediaNormalHard = async function (
         };
       }
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       return {
         status: 500,
         stream: null,
@@ -631,7 +631,7 @@ exports.getMediaNormalHard = async function (
         };
       }
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       return {
         status: 500,
         stream: null,
@@ -716,7 +716,7 @@ exports.getMediaNormalById = function (bucketId, mediaId, chunkSize, start) {
       mediaPath = mediaPath.replace(/\//gi, "\\/\\");
     }
   } catch (err) {
-    console.error(err);
+    errorLogger.log(err);
     result.status = 500;
   }
 
@@ -737,7 +737,7 @@ exports.getMediaNormalById = function (bucketId, mediaId, chunkSize, start) {
         mediaExt = row.extension;
       }
     } catch (err) {
-      console.error(err);
+      errorLogger.log(err);
       result.status = 500;
     }
   }
@@ -768,14 +768,14 @@ exports.getMediaNormalById = function (bucketId, mediaId, chunkSize, start) {
           stmt.run({ id: mediaId });
         }
       } catch (err) {
-        console.error(err);
+        errorLogger.log(err);
         result.status = 500;
       }
     } else {
       if (mediaSize === null) {
         mediaSize = storageConnector.getMediaSize(bucketName, mediaName);
         if (mediaSize === null) {
-          console.log("Media not present in storage. ");
+          errorLogger.log("Media not present in storage. ");
           result.status = 404;
 
           return result;
@@ -825,7 +825,7 @@ exports.getMediaNormalById = function (bucketId, mediaId, chunkSize, start) {
           }
         }
       } catch (err) {
-        console.error(err);
+        errorLogger.log(err);
         result.status = 500;
       }
     }

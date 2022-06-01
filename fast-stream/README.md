@@ -1,20 +1,3 @@
-# fast-stream
-
-The solution is intended to be able to stream media from Lyve Cloud fluently, with tracking of which media
-is consumed often and therefore considered to be popular. The solution would then cache the front-part of popular
-medias to allow for faster streaming. 
-
-The solution is intended to use a SQLite database to keep track of requests and be able to be well packaged into a Docker image. The solution is however incomplete. 
-
-## Setup 
-After pulling the solution from github, run `npm init`. 
-
-The access key, secret key and region of the Lyve Cloud S3 must the be set as environment variables `AWS_REGION`, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
-
-The solution can then be ran using `npm run backend-start`. 
-
-An accompanying front-end to test video viewing is available at "http://localhost:3000/video" after running `npm run dev`
-
 # Fast-Stream
 
 ![Fast-Stream Logo](images/FS-logo.png)
@@ -34,7 +17,7 @@ Other key features include:
 -  Handles CORS policy for cross-origin requests
 -  Support for streaming with pure HTML `<video>` element without any JS components needed
 
-Fast-Stream also comes with a simple accompanying web UI running on a different port. The UI acts as a dashboard to view available data and test the streaming of different data, but can be expanded to handle authentication or access control to different media by different users if needed. 
+Fast-Stream also comes with a simple accompanying web UI. The UI acts as a dashboard to view available data and test the streaming of different data, but can be expanded to handle authentication or access control to different media by different users if needed. 
 
 ## Requirements
 Operating Systems: Windows 64-Bit, MacOS 64-Bit (X86_64, Arm64), Linux 64-Bit (X86_64, Arm64)
@@ -77,7 +60,16 @@ Here's what you'll need:
 **Step 2:** 
 Open up the Command Line Interface and navigate to the folder called `code/` from the current folder holding this README.md file. 
 
-**Step 3:** Build the UI distribution files and docker image by running the `setup.sh` file (Unix-like) or `setup.bat` file (Windows). Modify these files if you want to change the name of the docker image. 
+**Step 3:** 
+Run the following command to initialise the NPM modules needed:
+
+```
+npm install
+```
+
+Ensure that the Docker engine is running.   
+
+**Step 4:** Build the UI distribution files and docker image by running the `setup.sh` file (Unix-like) or `setup.bat` file (Windows). Modify these files if you want to change the name of the docker image. 
 
 Unix-like
 ```
@@ -89,21 +81,37 @@ Windows
 > setup.bat
 ```
 
-**Step 4:** 
+**Step 5:** 
+Create the following Docker Volumes to mount into the solution container: 
+
+```
+docker volume create <logs-volume-name>
+docker volume create <data-volume-name>
+```
+
+Where the `<logs-volume-name>` is where the access and error logs are stored and `<data-volume-name>` is where the data used by the local caching script is stored
+
+**Step 6:** 
 Run the docker image using the following command: 
 
 Default (No changes to docker image name)
 ```
-docker run -p <ui-port-ext>:<ui-port-int> -p <api-port-ext>:<api-port-int> --name <desired-container-name> -e AWS_SECRET_ACCESS_KEY=<secret-key> -e AWS_ACCESS_KEY_ID=<access-key> -e AWS_REGION=<region> -e AWS_ENDPOINT=<endpoint> -e API_PORT=<api-port-int> -e UI_PORT=<ui-port-int> fast-stream
+docker run -p <port-ext>:<port-int> --name <desired-container-name> --mount source=<logs-volume-name>,target=/usr/src/app/server/logs --mount source=<data-volume-name>,target=/usr/src/app/server/data -e AWS_SECRET_ACCESS_KEY=<secret-key> -e AWS_ACCESS_KEY_ID=<access-key> -e AWS_REGION=<region> -e AWS_ENDPOINT=<endpoint> -e PORT=<port-int> fast-stream
 ```
 
 Customised
 ```
-docker run -p <ui-port-ext>:<ui-port-int> -p <api-port-ext>:<api-port-int> --name <desired-container-name> -e AWS_SECRET_ACCESS_KEY=<secret-key> -e AWS_ACCESS_KEY_ID=<access-key> -e AWS_REGION=<region> -e AWS_ENDPOINT=<endpoint> -e API_PORT=<api-port-int> -e UI_PORT=<ui-port-int> <container-name>
+docker run -p <port-ext>:<port-int> --name <desired-container-name> --mount source=<logs-volume-name>,target=/usr/src/app/server/logs --mount source=<data-volume-name>,target=/usr/src/app/server/data -e AWS_SECRET_ACCESS_KEY=<secret-key> -e AWS_ACCESS_KEY_ID=<access-key> -e AWS_REGION=<region> -e AWS_ENDPOINT=<endpoint> -e PORT=<port-int> <container-name>
 ```
 
-**Step 5:** 
-Visit localhost on each of the defined ports for the desired service, for e.g. if my `<api-port-ext>` is 5000, the API service is at localhost:5000. 
+Alternatively a Docker Compose may be used where after filling up the credentials in `docker-compose.yml`, we run: 
+
+```
+docker-compose up
+```
+
+**Step 7:** 
+Visit localhost on the defined port, for e.g. if my `<port-ext>` is 5000, the API service is at http://localhost:5000/. 
 
 ## Running Steps (No Docker)
 **Step 1:** Get your Lyve Cloud bucket credentials.   
@@ -121,40 +129,55 @@ Open up the Command Line Interface and navigate to the folder called `code/` fro
 -  AWS_ACCESS_KEY_ID: The access key
 -  AWS_REGION: The cloud storage region
 -  AWS_ENDPOINT: The cloud storage endpoint
--  API_PORT: The port number for the API
--  UI_PORT: The port number for the UI
+-  PORT: The port number for the solution
 
 **Step 4:** 
-Run the files using 2 commands, each on a separate terminal: 
+Run the following command to initialise the NPM modules needed:
 
 ```
-npm run dev
-```
-
-```
-npm run backend-start
+npm install
 ```
 
 **Step 5:** 
-Visit localhost on each of the defined ports for the desired service, for e.g. if my API_PORT is 5000, the API service is at localhost:5000. 
+Run the following command to build the files for the SPA UI:
+
+```
+npm run build
+```
+
+**Step 6:** 
+Run the following command to copy the UI into the main application: 
+
+```
+cp dist/ server/public/
+```
+
+**Step 7:** 
+Run the files using the following command: 
+
+```
+npm run backend-devstart
+```
+
+**Step 8:** 
+Visit localhost on the defined port, for e.g. if my `<port-ext>` is 5000, the API service is at http://localhost:5000/.  
 
 ## Results 
 Video, Audio and Image can be streamed/retrieved when API endpoint is called using `<source>` element for video and audio, and `<img src>` element for image. 
 
 ## Tested by
-* August 22, 2021: Bari Arviv (bari.arviv@seagate.com) on Ubuntu 20.4
-* month day, year: full_name (email) on your_environment
+* May 31, 2022: Hoo-dkwozD on MacOS 11.3.1 (arm64)
 
 ### Project Structure
 This section will describe the representation of each of the folders or files in the structure.
 
 ```
 .
-├── README.md
+├── README.md (video demo link here)
 ├── code
 │   └── <source-codes>
 ├── documentation
-│   └── Demo.mov
+│   └── API Docs.md
 │   └── Seagate Lyve Cloud Hackathon_ Fast Stream.pdf
 └── images
     └── FS-logo.png
@@ -164,7 +187,7 @@ This section will describe the representation of each of the folders or files in
 This folder contains all the code files.
 
 ### `/documentation`
-This folder contains the demo video and presentation file.
+This folder contains the API documentation and presentation file.
 
 ### `/images`
 This folder contains all the images for README.md.
