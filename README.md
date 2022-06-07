@@ -7,7 +7,7 @@
 
 [Lyve Cloud](https://www.seagate.com/gb/en/services/cloud/storage/) by [Seagate](https://www.seagate.com) is an S3-compatible storage-as-a-service platform designed as a simple, trusted, and efficient service allowing enterprises to unlock the value of their massive unstructured datasets and enabling them to store more for longer.
 
-This repository holds integration solutions written by Lyve Cloud users who contributed them for the benefit of the Lyve Cloud users` community. We are happy to see you here and encourage you to take part in this community. 
+This repository holds integration solutions written by Lyve Cloud community developers who contributed them for the benefit of the Lyve Cloud users` community. We are happy to see you here and encourage you to take part in this community. 
 
 Notice the integration solutions are not part of the Lyve Cloud product.  
 
