@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/cenkalti/backoff/v4"
 	"go.uber.org/zap"
 	"seagate-hackathon/db"
 	"seagate-hackathon/utils"
