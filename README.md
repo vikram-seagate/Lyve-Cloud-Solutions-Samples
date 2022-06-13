@@ -9,7 +9,7 @@
 
 This repository holds integration solutions written by Lyve Cloud community developers who contributed them for the benefit of the Lyve Cloud users` community. We are happy to see you here and encourage you to take part in this community. 
 
-Notice the integration solutions are not part of the Lyve Cloud product.  
+Notice the integration solutions are not part of the Lyve Cloud product. The integrations listed on this page are made available and contributed “as-is”, without warranty, and disclaiming liability for damages resulting from using the projects.
 
 ## Getting Started
 - Browse our repository to find usefull tools for your needs (as listed below) or to get inspiration for building your integration solution.
