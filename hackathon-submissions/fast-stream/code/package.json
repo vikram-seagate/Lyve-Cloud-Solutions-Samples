@@ -7,9 +7,9 @@
     "preview": "vite preview --port 5050",
     "test:unit": "vitest --environment jsdom",
     "typecheck": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "backend-start": "node ./entry/www",
-    "backend-devstart": "nodemon ./entry/www",
+    "lint": "eslint  --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "backend-start": "node entry/www",
+    "backend-devstart": "nodemon entry/www",
     "backend-serverstart": "DEBUG=fast-stream:* npm run backend-devstart"
   },
   "dependencies": {

@@ -14,7 +14,7 @@ dist
 dist-ssr
 coverage
 *.local
-server/media/*
+server/media/.keep
 !server/media/.keep
 server/data/*
 !server/data/.keep
