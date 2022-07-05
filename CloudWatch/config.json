@@ -1,0 +1,10 @@
+{
+    "lyvecloud": {
+        "input_bucket": "lyvecloud-audit-logs-bucket",
+        "log_type": "audit-logs-type",
+        "mode": "['',all,mm/dd/yy]"
+    },
+    "aws": {
+        "log_group": "aws-log-group"
+    }
+}

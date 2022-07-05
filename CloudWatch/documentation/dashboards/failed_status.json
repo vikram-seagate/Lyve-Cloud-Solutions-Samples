@@ -1,0 +1,60 @@
+{
+    "widgets": [
+        {
+            "height": 10,
+            "width": 12,
+            "y": 0,
+            "x": 12,
+            "type": "log",
+            "properties": {
+                "query": "SOURCE '<AWS_CLOUDWATCH_LOG_GROUP_NAME>' | fields auditEntry.api.statusCode, auditEntry.api.bucket\n|filter auditEntry.api.statusCode>206\n| stats count(*) as FailCount by auditEntry.api.statusCode\n",
+                "region": "<AWS_REGION>",
+                "stacked": false,
+                "title": "Most common failed status count",
+                "view": "bar"
+            }
+        },
+        {
+            "height": 10,
+            "width": 12,
+            "y": 0,
+            "x": 0,
+            "type": "log",
+            "properties": {
+                "query": "SOURCE '<AWS_CLOUDWATCH_LOG_GROUP_NAME>' | fields auditEntry.api.statusCode, auditEntry.api.bucket\n|filter auditEntry.api.statusCode>206\n|stats count(*) as FailedStatus by auditEntry.api.bucket\n",
+                "region": "<AWS_REGION>",
+                "stacked": false,
+                "title": "Buckets with most failed operations responses",
+                "view": "pie"
+            }
+        },
+        {
+            "height": 7,
+            "width": 12,
+            "y": 10,
+            "x": 0,
+            "type": "log",
+            "properties": {
+                "query": "SOURCE '<AWS_CLOUDWATCH_LOG_GROUP_NAME>' | fields auditEntry.api.statusCode, auditEntry.api.bucket, serviceAccountName, auditEntry.time\n| filter auditEntry.api.statusCode > 206\n| filter ispresent(serviceAccountName) and ispresent(auditEntry.api.bucket)\n| display auditEntry.api.statusCode, auditEntry.api.bucket, serviceAccountName, auditEntry.time",
+                "region": "<AWS_REGION>",
+                "stacked": false,
+                "title": "List of failed status logs",
+                "view": "table"
+            }
+        },
+        {
+            "height": 7,
+            "width": 12,
+            "y": 10,
+            "x": 12,
+            "type": "log",
+            "properties": {
+                "query": "SOURCE '<AWS_CLOUDWATCH_LOG_GROUP_NAME>' | fields auditEntry.api.bucket\n| stats count(*) as Operations by auditEntry.api.bucket",
+                "region": "<AWS_REGION>",
+                "stacked": false,
+                "title": "Most used buckets",
+                "view": "pie"
+            }
+        }
+    ]
+}
