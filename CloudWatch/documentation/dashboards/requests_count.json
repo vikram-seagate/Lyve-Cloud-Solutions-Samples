@@ -1,0 +1,30 @@
+{
+    "widgets": [
+        {
+            "height": 6,
+            "width": 24,
+            "y": 0,
+            "x": 0,
+            "type": "log",
+            "properties": {
+                "query": "SOURCE '<AWS_CLOUDWATCH_LOG_GROUP_NAME>' | fields @timestamp, @message\n |  display @timestamp, auditEntry.api.name, auditEntry.api.bucket, serviceAccountName",
+                "region": "<AWS_REGION>",
+                "title": "Log group: lyvecloud",
+                "view": "table"
+            }
+        },
+        {
+            "height": 6,
+            "width": 24,
+            "y": 6,
+            "x": 0,
+            "type": "log",
+            "properties": {
+                "query": "SOURCE '<AWS_CLOUDWATCH_LOG_GROUP_NAME>' | fields @message\n| stats count() as requestCount by auditEntry.api.name",
+                "region": "<AWS_REGION>",
+                "stacked": false,
+                "view": "pie"
+            }
+        }
+    ]
+}
