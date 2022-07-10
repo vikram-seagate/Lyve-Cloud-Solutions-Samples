@@ -1,0 +1,19 @@
+{
+  "version": "2.0",
+  "app_name": "syncer",
+  "automatic_layer": true,
+  "stages": {
+    "dev": {
+      "environment_variables": {
+        "lc_secrets": "syncer secrets name",
+        "lc_region": "lyve cloude region",
+        "lc_endpoint": "lyve cloud end point",
+        "source_bucket": "source bucket name",
+        "target_bucket": "target bucket name"
+      },
+      "api_gateway_stage": "dev",
+      "autogen_policy": false,
+      "iam_policy_file": "policy.json"
+    }
+  }
+}
