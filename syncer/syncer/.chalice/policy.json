@@ -1,0 +1,20 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "VisualEditor0",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogStream",
+        "s3:*",
+        "logs:CreateLogGroup",
+        "logs:PutLogEvents",
+        "secretsmanager:GetSecretValue"
+      ],
+      "Resource": [
+        "arn:aws:s3:::*/*", "arn:*:logs:*:*:*",
+        "arn:aws:secretsmanager:*:*:secret:*"
+      ]
+    }
+  ]
+}
