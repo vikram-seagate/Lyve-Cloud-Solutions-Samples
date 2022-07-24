@@ -153,6 +153,7 @@ Given below is the overall architecture diagram of this solution:
 
 ## Tested by:
 * May 9, 2022: Siva Gurunathan (siva.gurunathan@seagate.com) on Windows
+* july 20, 2022: Bari Arviv (bari.arviv@seagate.com) on MacOs
 
 
 ### Project Structure
