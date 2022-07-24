@@ -11,8 +11,7 @@
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-router-dom": "^6.3.0",
-    "react-scripts": "5.0.1",
-    "umi-request": "^1.4.0",
+    "umi-request": "^1.2.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -46,8 +45,9 @@
     "@types/react": "^18.0.9",
     "@types/react-dom": "^18.0.4",
     "css-what": "^5.0.1",
-    "node-fetch": "^3.1.1",
+    "node-fetch": "^2.6.7",
     "nth-check": "^2.0.1",
+    "react-scripts": "^5.0.1",
     "typescript": "^4.6.4"
   },
   "proxy": "http://localhost:8080"
