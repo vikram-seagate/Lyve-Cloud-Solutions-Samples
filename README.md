@@ -18,7 +18,7 @@ Notice the integration solutions are not part of the Lyve Cloud product. The int
 - Want to create and contribute your own solution? Read our [Contribution Guide](CONTRIBUTING.md).
 
 ## Integration Solutions
-1. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.](cloudwatch/)
+1. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.](CloudWatch/)
 2. [Calculating Lyve Cloud bucket metrics using AWS Lambda and displays them in AWS CloudWatch.](bucket-metrics-collection/)
 3. [On-demand one-way sync of local directory with Lyve Cloud bucket.](s3sync-local-to-lyvecloud/)
 4. [Migrating and one-way synchronizing data between AWS bucket to Lyve Cloud bucket](syncer/).
