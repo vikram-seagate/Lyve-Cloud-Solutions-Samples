@@ -43,5 +43,8 @@
   "devDependencies": {
     "css-what": "^5.0.1",
     "react-scripts": "^5.0.1"
+  },
+  "overrides": {
+    "nth-check": "^2.0.1"
   }
 }

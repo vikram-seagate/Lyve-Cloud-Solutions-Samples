@@ -45,10 +45,12 @@
     "@types/react": "^18.0.9",
     "@types/react-dom": "^18.0.4",
     "css-what": "^5.0.1",
-    "node-fetch": "^2.6.7",
-    "nth-check": "^2.0.1",
     "react-scripts": "^5.0.1",
     "typescript": "^4.6.4"
+  },
+  "overrides": {
+    "nth-check": "^2.0.1",
+    "node-fetch": "^2.6.7"
   },
   "proxy": "http://localhost:8080"
 }
