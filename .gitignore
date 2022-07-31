@@ -202,3 +202,5 @@ reports/
 
 # Node Modules
 node_modules/
+
+s3-actions
