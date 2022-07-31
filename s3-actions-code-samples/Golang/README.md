@@ -145,11 +145,12 @@ func (c *S3Client) listObjects() error {
    if err != nil {
 	   return err
    }
-   for _, item := range resp.Contents {
-	   PrintlnC.Cyan("Object Name: %s, Object Size: %d, Last modified: %s\n", *item.Key, *item.Size, *item.LastModified)
-   }
    if len(resp.Contents) == 0 {
 	   PrintlnC.Red("The bucket is empty!\n")
+	   return nil
+   }
+   for _, item := range resp.Contents {
+	   PrintlnC.Cyan("Object Name: %s, Object Size: %d, Last modified: %s\n", *item.Key, *item.Size, *item.LastModified)
    }
    return nil
 }
