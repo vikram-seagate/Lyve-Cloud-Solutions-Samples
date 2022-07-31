@@ -6,32 +6,32 @@ import argparse
 from botocore.exceptions import ClientError
 
 
-""" Functions for bucket operations """
 # The function prints the list of the existing buckets
 def list_buckets():
     buckets = s3_client.list_buckets()
+    print("List Buckets:")
     if buckets['Buckets']:
         for bucket in buckets['Buckets']:
-            print(bucket)
+            print('* %s' % bucket['Name'])
 
 
 # The function performs the operation according to the parameter obtained. In case of
-# an exception, print it. You can create, delete and print the list of existing buckets.
+# an exception, print it. You can create, delete and print the list of existing buckets
 def bucket_operations(bucket_name=None, operation='list'):
     if operation != 'list' and not bucket_name:
-        logging.error('The bucket name is %s missing!' % bucket_name)
+        logging.error('The bucket name cannot be empty! Please provide a bucket name')
         return False
     try:
-        if operation == 'delete':
+        if operation == 'remove':
             s3_client.delete_bucket(Bucket=bucket_name)
-            print('Bucket %s successfully deleted' % bucket_name)
-        elif operation == 'create':
+            print('The bucket %s was successfully deleted' % bucket_name)
+        elif operation == 'make':
             s3_client.create_bucket(Bucket=bucket_name)
-            print('Successfully created bucket %s' % bucket_name)
+            print('Bucket %s was created successfully' % bucket_name)
         elif operation == 'list':
             list_buckets()
         else:
-            logging.error('Unknown bucket operation')
+            logging.error('Unknown operation!!')
             return False
     except ClientError as err:
         logging.error(err)
@@ -40,35 +40,33 @@ def bucket_operations(bucket_name=None, operation='list'):
     return True
 
 
-""" Functions for objects operations """
 # The function prints the list of the objects in the bucket
 def list_objects(bucket_name):
     current_bucket = s3_resource.Bucket(bucket_name)
-    print('The files in bucket %s:\n' % bucket_name)
     for obj in current_bucket.objects.all():
-        print(obj.meta.data)
+        print('Object Name: %s, Object Size: %d, Last modified: %s' % (obj.key, obj.size, str(obj.last_modified)))
 
 
 # The function performs the operation according to the parameter obtained. In case of an exception,
 # print it. You can upload, download and delete an object and print the list of the objects inside the bucket.
-def object_operations(bucket_name, operation='list', file_name=None, file_location=None):
+def object_operations(bucket_name, operation='list', objectname=None, object_location=None):
     if not bucket_name:
-        logging.error('The bucket name is %s missing!' % bucket_name)
+        logging.error('The bucket name cannot be empty! Please provide a bucket name')
         return False
     try:
         if operation == 'list':
             list_objects(bucket_name)
-        elif operation == 'delete':
-            s3_client.delete_object(Bucket=bucket_name, Key=file_name)
-            print('Object %s successfully deleted' % file_name)
-        elif operation == 'download':
-            s3_resource.Bucket(bucket_name).download_file(file_name, file_location)
-            print('Object %s successfully downloaded' % file_name)
-        elif operation == 'upload':
-            s3_resource.Bucket(bucket_name).upload_file(file_location, file_name)
-            print('Object %s successfully uploaded' % file_name)
+        elif operation == 'remove':
+            s3_client.delete_object(Bucket=bucket_name, Key=objectname)
+            print('The object %q was successfully deleted' % objectname)
+        elif operation == 'get':
+            s3_resource.Bucket(bucket_name).download_file(objectname, object_location)
+            print('The object %s has been successfully downloaded' % objectname)
+        elif operation == 'put':
+            s3_resource.Bucket(bucket_name).upload_file(object_location, objectname)
+            print('The object %s has been uploaded successfully' % objectname)
         else:
-            logging.error('Unknown file operation')
+            logging.error('Unknown operation!!')
             return False
     except ClientError as err:
         logging.error(err)
@@ -86,70 +84,75 @@ def read_config(file_path):
 
 
 def flags_init():
-    # args contains user inputs
-    parser = argparse.ArgumentParser(description='python3 s3-actions.py --operation=po --bucketName=bari-test --objectPath=go.mod')
-    parser.add_argument('-o', '--operation', type=str, required=True, help='cb[CreateBucket]/db[DeleteBucket]/lb[ListBuckets]/po[PutObject]/do[DeleteObject]/go[GetObject]/lo[ListObjects]')
-    parser.add_argument('-b', '--bucketName', type=str, help='The bucket name')
-    parser.add_argument('-op', '--objectPath', type=str, help='The object path for delete, put, and get object')
-    parser.add_argument('-c', '--configPath', type=str, default='config.json', help='The config file path')
+    # Args contains user inputs
+    parser = argparse.ArgumentParser(description='python3 s3-actions.py --Operation=put --BucketName=bari-test --ObjectPath=example.txt')
+    parser.add_argument('-B', '--BucketName', type=str, help='The bucket name')
+    parser.add_argument('-C', '--ConfigPath', type=str, default='config.json', help='The config file path')
+    parser.add_argument('-Path', '--ObjectPath', type=str, help='The object path for delete, put, and get object')
+    parser.add_argument('-Op', '--Operation', type=str, required=True, help='mb[MakeBucket]/rb[RemoveBucket]/lb[ListBuckets]/put[PutObject]/rm[RemoveObject]/get[GetObject]/ls[ListObjects]')
     return parser.parse_args()
 
 
 def verify_flags():
-    if args.operation == "":
-        print("ERROR: --operation flag cannot be empty! Please provide an operation")
+    if args.Operation == "":
+        print("ERROR: --Operation flag cannot be empty! Please provide an operation")
         return 0
-    if args.bucketName == "" and args.operation != "lb":
-        print("ERROR: --bucketName flag cannot be empty! Please provide a bucket name")
+    if args.BucketName == "" and args.Operation != "ls":
+        print("ERROR: --BucketName flag cannot be empty! Please provide a bucket name")
         return 0
-    if (args.operation == "po" or args.operation == "do" or args.operation == "go") and args.objectPath == "":
-        print("ERROR: --objectPath flag cannot be empty! Please provide an object path")
+    if (args.Operation == "put" or args.Operation == "rm" or args.Operation == "get") and args.ObjectPath == "":
+        print("ERROR: --ObjectPath flag cannot be empty! Please provide an object path")
         return 0
 
     return 1
 
 
 def main():
-    # creates a new bucket
-    if args.operation == 'cb' or args.operation == 'CreateBucket':
-        bucket_operations(args.bucketName, 'create')
-    # deletes a bucket
-    elif args.operation == 'db' or args.operation == 'DeleteBucket':
-        bucket_operations(args.bucketName, 'delete')
-    # prints the list of the existing buckets
-    elif args.operation == 'lb' or args.operation == 'ListBuckets':
-        bucket_operations(operation='list')
-    # uploads a file to the bucket
-    elif args.operation == 'po' or args.operation == 'PutObject':
-        object_operations(args.bucketName, 'upload', args.objectPath, args.objectPath)
-    # deletes a file from the bucket
-    elif args.operation == 'do' or args.operation == 'DeleteObject':
-        object_operations(args.bucketName, 'delete', args.objectPath)
-    # downloads a file from the bucket
-    elif args.operation == 'go' or args.operation == 'GetObject':
-        object_operations(args.bucketName, 'download', args.objectPath, args.objectPath)
-    # prints the list of the objects in the bucket
-    elif args.operation == 'lo' or args.operation == 'ListObjects':
-        object_operations(args.bucketName, 'list')
+    # Makes a new bucket
+    if args.Operation == 'mb' or args.Operation == 'MakeBucket':
+        bucket_operations(args.BucketName, 'make')
+    # Removes a bucket
+    elif args.Operation == 'rb' or args.Operation == 'RemoveBucket':
+        bucket_operations(args.BucketName, 'remove')
+    # Prints the list of the existing buckets
+    elif args.Operation == 'lb' or args.Operation == 'ListBuckets':
+        bucket_operations()
+    # Puts a file to the bucket
+    elif args.Operation == 'put' or args.Operation == 'PutObject':
+        object_operations(args.BucketName, 'put', args.ObjectPath, args.ObjectPath)
+    # Removes an object from the bucket
+    elif args.Operation == 'rm' or args.Operation == 'RemoveObject':
+        object_operations(args.BucketName, 'remove', args.ObjectPath)
+    # Gets an object from the bucket
+    elif args.Operation == 'get' or args.Operation == 'GetObject':
+        object_operations(args.BucketName, 'get', args.ObjectPath, args.ObjectPath)
+    # Prints the list of the objects in the bucket
+    elif args.Operation == 'ls' or args.Operation == 'ListObjects':
+        object_operations(args.BucketName)
     else:
         print('Unknown operation!!')
 
 
 if __name__ == '__main__':
     args = flags_init()
-    config = read_config(args.configPath)
+    config = read_config(args.ConfigPath)
 
-    # initializes the credentials and creates an S3 service client
+    # Initializes the credentials and creates an S3 service client
     if verify_flags():
-        # objects to perform actions: client is swiss knife, resource has all sort of data
-        s3_resource = boto3.resource('s3', endpoint_url=config["endpoint_url"],
-                                     aws_access_key_id=config["access_key"],
-                                     aws_secret_access_key=config["secret_key"],
-                                     region_name=config["region_name"])
+        s3_resource = boto3.resource(
+            's3',
+            endpoint_url=config["endpoint_url"],
+            aws_access_key_id=config["access_key"],
+            aws_secret_access_key=config["secret_key"],
+            region_name=config["region_name"],
+        )
 
-        s3_client = boto3.client('s3', endpoint_url=config["endpoint_url"],
-                                 aws_access_key_id=config["access_key"],
-                                 aws_secret_access_key=config["secret_key"],
-                                 region_name=config["region_name"])
+        s3_client = boto3.client(
+            's3',
+            endpoint_url=config["endpoint_url"],
+            aws_access_key_id=config["access_key"],
+            aws_secret_access_key=config["secret_key"],
+            region_name=config["region_name"],
+        )
 
         main()
