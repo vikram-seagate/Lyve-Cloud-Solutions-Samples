@@ -341,7 +341,7 @@ redis = ">=4.3.1,<5.0.0"
 
 [package.source]
 type = "legacy"
-url = "https://gitlab.com/api/v4/projects/35836634/packages/pypi/simple"
+url = "https://gitlab.com/api/v4/projects/35836634/packages/pypi"
 reference = "gitlab"
 
 [[package]]
@@ -1307,7 +1307,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "9f6e2827a3702349b8ea9bbf7db58f18e6dd06ff4df77fedc27bfb68c7bb8e4f"
+content-hash = "31741a1701942336b45b7bb4abd9e0c08652543003c6a43e95175d83d7bfa40c"
 
 [metadata.files]
 aioredis = [
