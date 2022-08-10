@@ -145,14 +145,14 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.24.46"
+version = "1.24.48"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 
 [package.dependencies]
-botocore = ">=1.27.46,<1.28.0"
+botocore = ">=1.27.48,<1.28.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -161,7 +161,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.27.46"
+version = "1.27.48"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -323,7 +323,7 @@ test = ["pytest (>=6.2.0)", "pytest-benchmark", "pytest-cov", "pytest-subtests",
 
 [[package]]
 name = "cstor-s3"
-version = "0.4.4"
+version = "0.4.5"
 description = ""
 category = "main"
 optional = false
@@ -332,7 +332,7 @@ python-versions = ">=3.9,<4.0"
 [package.dependencies]
 boto3 = ">=1.22.5,<2.0.0"
 dramatiq = {version = ">=1.13.0,<2.0.0", extras = ["redis", "watch"]}
-httpx = ">=0.22.0,<0.23.0"
+httpx = ">=0.23.0,<0.24.0"
 pydantic = ">=1.9.0,<2.0.0"
 pytest-mock = ">=3.7.0,<4.0.0"
 python-rocksdb = ">=0.7.0,<0.8.0"
@@ -559,11 +559,11 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "httpcore"
-version = "0.14.7"
+version = "0.15.0"
 description = "A minimal low-level HTTP client."
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 anyio = ">=3.0.0,<4.0.0"
@@ -577,22 +577,21 @@ socks = ["socksio (>=1.0.0,<2.0.0)"]
 
 [[package]]
 name = "httpx"
-version = "0.22.0"
+version = "0.23.0"
 description = "The next generation HTTP client."
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 certifi = "*"
-charset-normalizer = "*"
-httpcore = ">=0.14.5,<0.15.0"
+httpcore = ">=0.15.0,<0.16.0"
 rfc3986 = {version = ">=1.3,<2", extras = ["idna2008"]}
 sniffio = "*"
 
 [package.extras]
 brotli = ["brotlicffi", "brotli"]
-cli = ["click (>=8.0.0,<9.0.0)", "rich (>=10.0.0,<11.0.0)", "pygments (>=2.0.0,<3.0.0)"]
+cli = ["click (>=8.0.0,<9.0.0)", "rich (>=10,<13)", "pygments (>=2.0.0,<3.0.0)"]
 http2 = ["h2 (>=3,<5)"]
 socks = ["socksio (>=1.0.0,<2.0.0)"]
 
@@ -1156,7 +1155,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "tomlkit"
-version = "0.11.2"
+version = "0.11.3"
 description = "Style preserving TOML library"
 category = "dev"
 optional = false
@@ -1316,7 +1315,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "7dfeaf4e08eac8340e38e2c9bf9a55b4c8723e7515fbe7bbae9da5331c49db09"
+content-hash = "08c4927cea26a03ed7fb0c902c63fe3d2abaa74a85e3cb485cc473cd037720c5"
 
 [metadata.files]
 aioredis = [
@@ -1446,8 +1445,8 @@ coverage = [
 ]
 cryptography = []
 cstor-s3 = [
-    {file = "cstor-s3-0.4.4.tar.gz", hash = "sha256:5cea6a86a5de789d57eb0b1afa1f3750039a240454a9fb985ace686590ccbacf"},
-    {file = "cstor_s3-0.4.4-py3-none-any.whl", hash = "sha256:a9f68bcbc485e4b2c71e0905aef22519d4f8e1ecb12935c3666498b91682e11b"},
+    {file = "cstor-s3-0.4.5.tar.gz", hash = "sha256:3bbf2d72651db02be3e584cfd411de9c2c72be173b5aa5637bd9d76df695dd3e"},
+    {file = "cstor_s3-0.4.5-py3-none-any.whl", hash = "sha256:16cf381eb3e15e2de40dd21eb95cbf1a97327e4d76155213fd31a9c7c07fd1ff"},
 ]
 daphne = [
     {file = "daphne-3.0.2-py3-none-any.whl", hash = "sha256:a9af943c79717bc52fe64a3c236ae5d3adccc8b5be19c881b442d2c3db233393"},
@@ -1629,14 +1628,8 @@ hiredis = [
     {file = "hiredis-2.0.0-pp37-pypy37_pp73-win32.whl", hash = "sha256:f52010e0a44e3d8530437e7da38d11fb822acfb0d5b12e9cd5ba655509937ca0"},
     {file = "hiredis-2.0.0.tar.gz", hash = "sha256:81d6d8e39695f2c37954d1011c0480ef7cf444d4e3ae24bc5e89ee5de360139a"},
 ]
-httpcore = [
-    {file = "httpcore-0.14.7-py3-none-any.whl", hash = "sha256:47d772f754359e56dd9d892d9593b6f9870a37aeb8ba51e9a88b09b3d68cfade"},
-    {file = "httpcore-0.14.7.tar.gz", hash = "sha256:7503ec1c0f559066e7e39bc4003fd2ce023d01cf51793e3c173b864eb456ead1"},
-]
-httpx = [
-    {file = "httpx-0.22.0-py3-none-any.whl", hash = "sha256:e35e83d1d2b9b2a609ef367cc4c1e66fd80b750348b20cc9e19d1952fc2ca3f6"},
-    {file = "httpx-0.22.0.tar.gz", hash = "sha256:d8e778f76d9bbd46af49e7f062467e3157a5a3d2ae4876a4bbfd8a51ed9c9cb4"},
-]
+httpcore = []
+httpx = []
 hyperlink = [
     {file = "hyperlink-21.0.0-py2.py3-none-any.whl", hash = "sha256:e6b14c37ecb73e89c77d78cdb4c2cc8f3fb59a885c5b3f819ff4ed80f25af1b4"},
     {file = "hyperlink-21.0.0.tar.gz", hash = "sha256:427af957daa58bc909471c6c40f74c5450fa123dd093fc53efd2e91d2705a56b"},

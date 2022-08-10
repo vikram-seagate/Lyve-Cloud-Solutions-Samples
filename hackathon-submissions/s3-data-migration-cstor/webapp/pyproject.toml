@@ -23,7 +23,7 @@ djoser = "^2.1.0"
 channels = "^3.0.4"
 channels-redis = "^3.4.0"
 pyjwt = "^2.4.0"
-cstor-s3 = "^0.4.4"
+cstor-s3 = "^0.4.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
