@@ -23,7 +23,7 @@ djoser = "^2.1.0"
 channels = "^3.0.4"
 channels-redis = "^3.4.0"
 pyjwt = "^2.4.0"
-cstor-s3 = "^0.4.5"
+cstor-s3 = { file = "/app/deps/cstor_s3-0.4.5-py3-none-any.whl" }
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

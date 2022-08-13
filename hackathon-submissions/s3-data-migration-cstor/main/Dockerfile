@@ -23,10 +23,10 @@ ADD core/noxfile.py /app/noxfile.py
 
 RUN nox -s venv -- init
 
-#RUN poetry install -vvv
 # Builds to /app/dist/cstor_s3-<version>-py3-none-any.whl
 RUN poetry build -f wheel
 
+# CSTOR Worker Image
 FROM python:3.10.4-buster as cstor-worker
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -47,6 +47,37 @@ ENV DRAMATIQ_PROCESSES=4
 ENV DRAMATIQ_THREADS=4
 
 ADD worker-entrypoint.sh /app/entrypoint.sh
+RUN chmod 0700 /app/entrypoint.sh
+
+CMD ["/app/entrypoint.sh"]
+
+# CSTOR Web Backend (Django)
+FROM python:3.10.4-buster as cstor-web-backend
+RUN apt-get update -y
+RUN apt-get install -y librocksdb-dev liblz4-dev libsnappy-dev
+
+RUN mkdir -p /app/deps
+WORKDIR /app
+
+RUN python3 -m venv .venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+RUN pip install nox==2022.1.7 poetry==1.1.13 wheel --no-cache-dir
+
+ADD webapp/src /app/src
+ADD webapp/poetry.lock /app/poetry.lock
+ADD webapp/pyproject.toml /app/pyproject.toml
+
+COPY --from=cstor_core /app/dist/cstor_s3-0.4.5-py3-none-any.whl /app/deps/cstor_s3-0.4.5-py3-none-any.whl
+
+RUN poetry config virtualenvs.create false
+RUN poetry config virtualenvs.in-project true
+
+ADD webapp/noxfile.py /app/noxfile.py
+
+RUN nox -s venv -- init
+
+ADD web-backend-entrypoint.sh /app/entrypoint.sh
 RUN chmod 0700 /app/entrypoint.sh
 
 CMD ["/app/entrypoint.sh"]
