@@ -48,10 +48,13 @@ DEBUG = (DEBUG_FLAG == "True")
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", ["localhost", "127.0.0.1"]).split(",")
 REDIS_URL: str = os.environ.get("REDIS_CONN", "redis://:Test123!@127.0.0.1:16379")
+print(f"REDIS_URL: {REDIS_URL}")
+print(os.environ.get("REDIS_CONN"))
 SQLITE_DB_PATH: str = os.environ.get("DB_CONN", BASE_DIR / "db.sqlite3")
 CSRF_ORIGINS_RAW: str = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS: List[str] = [] if CSRF_ORIGINS_RAW == "" else CSRF_ORIGINS_RAW.split(",")
-USE_X_FORWARDED_HOST =  True if not DEBUG else False
+#USE_X_FORWARDED_HOST =  True if not DEBUG else False
+print(f"CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}")
 
 # Application definition
 
