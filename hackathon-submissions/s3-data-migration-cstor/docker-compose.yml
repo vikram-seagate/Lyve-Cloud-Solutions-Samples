@@ -1,0 +1,74 @@
+version: "3.7"
+
+services:
+  web-server:
+    build:
+      context: web-server/
+    ports:
+      - "8080:80"
+    volumes:
+      - static-data:/var/www/webapp/static:ro
+      - frontend-data:/var/www/webapp/frontend:ro
+  msgbroker:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    command: 
+      - "redis-server"
+      - "--save"
+      - "20"
+      - "1"
+      - "--loglevel"
+      - "warning"
+      - "--requirepass"
+      - "${REDIS_PASS:-}"
+
+  web-frontend:
+    build:
+      context: main/
+      target: frontend-build
+    init: true
+    environment:
+      NODE_ENV: production
+      VUE_APP_WEB_API: "${WEB_API}"
+      VUE_APP_WEB_WS: "${WEB_WS}"
+    volumes:
+      - frontend-data:/var/www/webapp/frontend:rw
+
+  setup:
+    build:
+      context: main/
+      target: cstor-web-backend-migrate
+    init: true
+    environment:
+      DEBUG: ${DEBUG:-False}
+      SECRET_KEY: ${SECRET_KEY:-}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-}
+      REDIS_CONN: ${REDIS_CONN:-}
+      DB_CONN: ${DB_CONN:-/mnt/data/sqlite3.db}
+    volumes:
+      - cstor-data:/mnt/data:rw
+      - static-data:/var/www/webapp/static:z
+    
+  web-backend:
+    depends_on:
+      - "msgbroker"
+      - "setup"
+      - "web-server"
+    build:
+      context: main/
+      target: cstor-web-backend
+    environment:
+      DEBUG: ${DEBUG:-False}
+      SECRET_KEY: ${SECRET_KEY:-}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-}
+      REDIS_CONN: ${REDIS_CONN:-}
+      DB_CONN: ${DB_CONN:-/mnt/data/sqlite3.db}
+    volumes:
+      - cstor-data:/mnt/data:z
+
+volumes:
+  cstor-data:
+  static-data:
+  frontend-data:

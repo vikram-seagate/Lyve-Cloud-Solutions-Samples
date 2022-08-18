@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 
 from pathlib import Path
+from typing import List
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,14 +21,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
+# Configure defaults
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+}
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-a7datmu4_az*-r8kg_t*v)__^9i8njy7+agc5yg(j_+7^#6+cu'
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+   'django-insecure-a7datmu4_az*-r8kg_t*v)__^9i8njy7+agc5yg(j_+7^#6+cu',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG_FLAG = os.environ.get("DEBUG", "False")
+DEBUG = (DEBUG_FLAG == "True")
 
-ALLOWED_HOSTS = ["128.199.125.233"]
-
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", ["localhost", "127.0.0.1"]).split(",")
+REDIS_URL: str = os.environ.get("REDIS_CONN", "redis://:Test123!@127.0.0.1:16379")
+SQLITE_DB_PATH: str = os.environ.get("DB_CONN", BASE_DIR / "db.sqlite3")
+CSRF_ORIGINS_RAW: str = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
+CSRF_TRUSTED_ORIGINS: List[str] = [] if CSRF_ORIGINS_RAW == "" else CSRF_ORIGINS_RAW.split(",")
+USE_X_FORWARDED_HOST =  True if not DEBUG else False
 
 # Application definition
 
@@ -55,13 +79,12 @@ INSTALLED_APPS = [
 
 ASGI_APPLICATION = "dashboard.asgi.application"
 
-redis_url: str = os.environ.get("REDIS_CHANNEL_URL", "redis://:Test123!@127.0.0.1:16379")
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [redis_url],
+            "hosts": [REDIS_URL],
         },
     },
 }
@@ -122,7 +145,7 @@ WSGI_APPLICATION = 'dashboard.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': SQLITE_DB_PATH,
     }
 }
 
@@ -162,6 +185,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = "/var/www/webapp/static" if DEBUG is False else None
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

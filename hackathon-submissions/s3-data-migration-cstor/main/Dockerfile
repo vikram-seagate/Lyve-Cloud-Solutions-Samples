@@ -51,8 +51,8 @@ RUN chmod 0700 /app/entrypoint.sh
 
 CMD ["/app/entrypoint.sh"]
 
-# CSTOR Web Backend (Django)
-FROM python:3.10.4-buster as cstor-web-backend
+# CSTOR Web Backend Essentials (Django)
+FROM python:3.10.4-buster as cstor-web-essentials
 RUN apt-get update -y
 RUN apt-get install -y librocksdb-dev liblz4-dev libsnappy-dev
 
@@ -77,7 +77,40 @@ ADD webapp/noxfile.py /app/noxfile.py
 
 RUN nox -s venv -- init
 
+RUN mkdir -p /mnt/data
+RUN mkdir -p /var/www/webapp/static
+
+# For hosting Django Server
+FROM cstor-web-essentials as cstor-web-backend
+
 ADD web-backend-entrypoint.sh /app/entrypoint.sh
+RUN chmod 0700 /app/entrypoint.sh
+
+WORKDIR /app/src/cstor/dashboard
+
+CMD ["/app/entrypoint.sh"]
+
+# For creating Django migrations
+FROM cstor-web-essentials as cstor-web-backend-migrate
+
+ADD web-backend-migrate-entrypoint.sh /app/entrypoint.sh
+RUN chmod 0700 /app/entrypoint.sh
+
+CMD ["/app/entrypoint.sh"]
+
+FROM node:lts-alpine as frontend-build
+RUN mkdir -p /var/www/webapp/frontend
+
+WORKDIR /app
+ADD webapp/src/cstor/frontend /app
+
+RUN npm install
+
+#RUN npm run build
+
+#RUN cp -R /app/dist/* /var/www/webapp/frontend/
+
+ADD web-frontend-entrypoint.sh /app/entrypoint.sh
 RUN chmod 0700 /app/entrypoint.sh
 
 CMD ["/app/entrypoint.sh"]

@@ -20,6 +20,11 @@ def task_init(session: nox.Session, task_args: List[str]) -> None:
         "install",
         external=True,
     )
+    session.run(
+        "pip",
+        "install",
+        "gunicorn==20.1.0",
+    )
 
 
 def task_lint(session: nox.Session, task_args: List[str]) -> None:
