@@ -25,6 +25,11 @@ def task_init(session: nox.Session, task_args: List[str]) -> None:
         "install",
         "gunicorn==20.1.0",
     )
+    session.run(
+        "pip",
+        "install",
+        "uvicorn[standard]",
+    )
 
 
 def task_lint(session: nox.Session, task_args: List[str]) -> None:

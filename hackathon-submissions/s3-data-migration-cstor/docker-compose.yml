@@ -50,6 +50,10 @@ services:
       CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-}
       DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL}
       DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
+      #
+      REDIS_HOST: ${WORKER_REDIS_HOST:-}
+      REDIS_PORT: ${WORKER_REDIS_PORT:-}
+      REDIS_PASSWD: ${WORKER_REDIS_PASSWD:-}
     volumes:
       - cstor-data:/mnt/data:rw
       - static-data:/var/www/webapp/static:z
@@ -69,6 +73,10 @@ services:
       REDIS_CONN: ${REDIS_CONN:-}
       DB_CONN: ${DB_CONN:-/mnt/data/sqlite3.db}
       CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-}
+      #
+      REDIS_HOST: ${WORKER_REDIS_HOST:-}
+      REDIS_PORT: ${WORKER_REDIS_PORT:-}
+      REDIS_PASSWD: ${WORKER_REDIS_PASSWD:-}
     volumes:
       - cstor-data:/mnt/data:z
 
