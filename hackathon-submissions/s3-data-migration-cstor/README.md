@@ -154,13 +154,14 @@ Inside a the `.env` file, fill in below,
 REDIS_PASS=<REDIS PASSWORD HERE>
 SECRET_KEY=<STRONG SECRET HERE>
 ALLOWED_HOSTS=127.0.0.1,localhost,web-backend,<HOST_IP or DOMAIN>
-CSRF_TRUSTED_ORIGINS=http://<HOST_IP or DOMAIN>:<HOST PORT if present>
+CSRF_TRUSTED_ORIGINS=http://<HOST_IP or DOMAIN>:<WEB_API_PORT if not 80>
 # e.g http://127.0.0.1:8080
 REDIS_CONN=redis://:<REDIS PASSWORD HERE>@msgbroker:6379
 
-WEB_API=http://<HOST_IP or DOMAIN>:<HOST PORT if present>
+WEB_API_PORT=<EXTERNAL_FACING_PORT>
+WEB_API=http://<HOST_IP or DOMAIN>:<WEB_API_PORT if not 80>
 # e.g http://127.0.0.1:8080
-WEB_WS=ws://<HOST_IP or DOMAIN>:<HOST PORT if present>/ws/
+WEB_WS=ws://<HOST_IP or DOMAIN>:<WEB_API_PORT if not 80>/ws/
 # e.g ws://127.0.0.1:8080/ws/
 
 DJANGO_SUPERUSER_EMAIL=djadmin@gmail.com

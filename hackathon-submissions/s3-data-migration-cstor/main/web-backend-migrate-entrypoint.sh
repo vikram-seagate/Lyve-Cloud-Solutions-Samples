@@ -8,5 +8,5 @@ then
   python /app/src/cstor/dashboard/manage.py makemigrations --no-input
   python /app/src/cstor/dashboard/manage.py migrate --no-input
   python /app/src/cstor/dashboard/manage.py collectstatic --no-input --clear
-  python /app/src/cstor/dashboard/manage.py createsuperuser --no-input --username djadmin --email $DJANGO_SUPERUSER_EMAIL
+  python /app/src/cstor/dashboard/manage.py createsuperuser --no-input --username $DJANGO_SUPERUSER_USER --email $DJANGO_SUPERUSER_EMAIL
 fi

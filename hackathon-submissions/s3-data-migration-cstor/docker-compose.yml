@@ -78,7 +78,7 @@ services:
     build:
       context: web-server/
     ports:
-      - "8080:80"
+      - "${WEB_API_PORT}:80"
     volumes:
       - static-data:/var/www/webapp/static:ro
       - frontend-data:/var/www/webapp/frontend:ro
