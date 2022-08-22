@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from cstor.s3.core.aws import Account as AccountAWS
 from cstor.s3.core.aws import Bucket, ListBucketResult, S3Object
 from cstor.s3.core.lyvecloud import Account as AccountLYC
+from cstor.s3.core.default import Account as AccountDefault
 from cstor.s3.rocksdb.main import MigrationCache, MigrationStat
 from cstor.s3.secrets import (
     Account,
@@ -148,6 +149,7 @@ class Task(BaseModel):
 ACCOUNT_MAP: dict = {
     "AWS": AccountAWS,
     "LYC": AccountLYC,
+    "OTH": AccountDefault,
 }
 
 

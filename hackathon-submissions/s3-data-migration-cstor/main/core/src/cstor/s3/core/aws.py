@@ -140,7 +140,8 @@ class Account(BaseModel):
     access_key: str = ...
     secret_key: str = ...
     # For compatability with Backblaze and DigitalOcean
-    region: str = ""
+    #region: str = ""
+    region: str = None
     endpoint_s3: str = None
     session: Any = None  # Set on init
     client_s3: Any = None  # Set on init

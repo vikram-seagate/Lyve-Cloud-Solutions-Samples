@@ -1,5 +1,6 @@
 FROM python:3.10.4-buster as cstor_core
 ARG DEBIAN_FRONTEND=noninteractive
+ARG CORE_VERSION=0.4.6
 
 RUN apt-get update -y
 RUN apt-get install -y librocksdb-dev liblz4-dev libsnappy-dev
@@ -28,6 +29,7 @@ RUN poetry build -f wheel
 
 # CSTOR Worker Image
 FROM python:3.10.4-buster as cstor-worker
+ARG CORE_VERSION=0.4.6
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y
@@ -39,9 +41,9 @@ WORKDIR /app
 RUN python3 -m venv .venv
 ENV PATH="/app/.venv/bin:$PATH"
 
-COPY --from=cstor_core /app/dist/cstor_s3-0.4.5-py3-none-any.whl /app/cstor_s3-0.4.5-py3-none-any.whl
+COPY --from=cstor_core /app/dist/cstor_s3-$CORE_VERSION-py3-none-any.whl /app/cstor_s3-$CORE_VERSION-py3-none-any.whl
 
-RUN pip install /app/cstor_s3-0.4.5-py3-none-any.whl
+RUN pip install /app/cstor_s3-$CORE_VERSION-py3-none-any.whl
 
 ENV DRAMATIQ_PROCESSES=4
 ENV DRAMATIQ_THREADS=4
@@ -53,6 +55,7 @@ CMD ["/app/entrypoint.sh"]
 
 # CSTOR Web Backend Essentials (Django)
 FROM python:3.10.4-buster as cstor-web-essentials
+ARG CORE_VERSION=0.4.6
 RUN apt-get update -y
 RUN apt-get install -y librocksdb-dev liblz4-dev libsnappy-dev
 
@@ -68,7 +71,7 @@ ADD webapp/src /app/src
 ADD webapp/poetry.lock /app/poetry.lock
 ADD webapp/pyproject.toml /app/pyproject.toml
 
-COPY --from=cstor_core /app/dist/cstor_s3-0.4.5-py3-none-any.whl /app/deps/cstor_s3-0.4.5-py3-none-any.whl
+COPY --from=cstor_core /app/dist/cstor_s3-$CORE_VERSION-py3-none-any.whl /app/deps/cstor_s3-$CORE_VERSION-py3-none-any.whl
 
 RUN poetry config virtualenvs.create false
 RUN poetry config virtualenvs.in-project true

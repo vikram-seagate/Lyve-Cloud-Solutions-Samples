@@ -1,14 +1,6 @@
 version: "3.7"
 
 services:
-  web-server:
-    build:
-      context: web-server/
-    ports:
-      - "8080:80"
-    volumes:
-      - static-data:/var/www/webapp/static:ro
-      - frontend-data:/var/www/webapp/frontend:ro
   msgbroker:
     image: redis:6.2-alpine
     restart: always
@@ -62,7 +54,6 @@ services:
     depends_on:
       - "msgbroker"
       - "setup"
-      - "web-server"
     build:
       context: main/
       target: cstor-web-backend
@@ -80,12 +71,21 @@ services:
     volumes:
       - cstor-data:/mnt/data:z
 
+  web-server:
+    depends_on:
+      - "web-backend"
+      - "web-frontend"
+    build:
+      context: web-server/
+    ports:
+      - "8080:80"
+    volumes:
+      - static-data:/var/www/webapp/static:ro
+      - frontend-data:/var/www/webapp/frontend:ro
+
   web-worker-1:
     depends_on:
-      - "msgbroker"
-      - "setup"
       - "web-server"
-      - "web-backend"
     build:
       context: main/
       target: cstor-worker

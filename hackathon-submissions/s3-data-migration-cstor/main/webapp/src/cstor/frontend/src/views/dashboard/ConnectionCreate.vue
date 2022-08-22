@@ -41,6 +41,7 @@
                     <option disabled value="">Select One</option>
                     <option value="AWS">AWS</option>
                     <option value="LYC">LyveCloud</option>
+                    <option value="OTH">Others</option>
                   </select>
                 </div>
               </div>

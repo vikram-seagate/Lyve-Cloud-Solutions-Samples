@@ -45,6 +45,7 @@ class CloudProvider(models.Model):
         """Supported Cloud Providers"""
         AWS = "AWS", _("Amazon Web Services")
         LYC = "LYC", _("Lyve Cloud by Seagate")
+        OTH = "OTH", _("Others")
 
     name = models.CharField(max_length=255)
     slug = models.SlugField()
