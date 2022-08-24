@@ -148,33 +148,51 @@ $ git clone https://github.com/Segate/Lyve-Cloud-Solutions-Samples.git
 $ cd Lyve-Cloud-Solutions-Sample/hackathon-submissions/s3-data-migration-cstor
 ```
 
-Inside a the `.env` file, fill in below,
+Create a new file `.env` in the project folder. Please use `example.env` for reference, only change values enclosed with `<>` and remove the `<>`.
+
+To generate strong passwords, users can use the [Lastpass](https://www.lastpass.com/features/password-generator) website.
+Passwords should be at least 15 characters long and alpha-numeric.
+
+Use different generated passwords for the following variables in `.env` file, using the site above.
+
+- REDIS_PASS
+- SECRET_KEY
+- DJANGO_SUPERUSER_PASSWORD
+
+Please **re-use** the REDIS_PASS password for the following:
+- WORKER_REDIS_PASSWD
+
+For the example below, replace the placeholder `<>` with your value.
+For example, replace `REDIS_PASS=<GENERATED PASSWORD HERE>` with `REDIS_PASS=YourStrongPassword123456`
+
+The solution is expected to be deployed in VM, load balancer, Kubernetes environment with its own IP.
+
+In the example below, we assume the VM IP address is `192.168.1.2`, with port `8082`.
+
 
 ```bash
-REDIS_PASS=<REDIS PASSWORD HERE>
-SECRET_KEY=<STRONG SECRET HERE>
-ALLOWED_HOSTS=127.0.0.1,localhost,web-backend,<HOST_IP or DOMAIN>
-CSRF_TRUSTED_ORIGINS=http://<HOST_IP or DOMAIN>:<WEB_API_PORT if not 80>
-# e.g http://127.0.0.1:8080
-REDIS_CONN=redis://:<REDIS PASSWORD HERE>@msgbroker:6379
+REDIS_PASS=<GENERATED PASSWORD HERE>
+SECRET_KEY=<GENERATED PASSWORD HERE>
+ALLOWED_HOSTS=127.0.0.1,localhost,192.168.1.2:8082
+CSRF_TRUSTED_ORIGINS=http://192.168.1.2:8082
+REDIS_CONN=redis://:<REDIS PASS HERE>@msgbroker:6379  # 6379 is the default port that Redis listens on
 
-WEB_API_PORT=<EXTERNAL_FACING_PORT>
-WEB_API=http://<HOST_IP or DOMAIN>:<WEB_API_PORT if not 80>
-# e.g http://127.0.0.1:8080
-WEB_WS=ws://<HOST_IP or DOMAIN>:<WEB_API_PORT if not 80>/ws/
-# e.g ws://127.0.0.1:8080/ws/
+WEB_API_PORT=8082
+WEB_API=http://192.168.1.2:8082
+WEB_WS=ws://192.168.1.2:8082/ws/
 
-DJANGO_SUPERUSER_EMAIL=djadmin@gmail.com
-DJANGO_SUPERUSER_PASSWORD=<DJANGO_SUPERUSER_PASSWORD>
+DJANGO_SUPERUSER_USER=<DJANGO USERNAME> # Username to authenticate for Django
+DJANGO_SUPERUSER_EMAIL=<DJANGO SUPER USER EMAIL> # Email to use for Django super user.
+DJANGO_SUPERUSER_PASSWORD=<DJANGO SUPER USER PASSWORD> # Randomly generated, user-supplied alphanumeric password for the Django Superuser
 
-WORKER_AWS_USER=<AWS Access Key Id for AWS KMS Access HERE, Step 2>
-WORKER_AWS_SECRET=<AWS Secret Key for AWS Secrets Manager HERE, Step 2>
+WORKER_AWS_USER=<AWS Access Key Id> # AWS Credential that can read and write to AWS Secrets Manager
+WORKER_AWS_SECRET=<AWS Secret Access Key> # AWS Credential that can read and write to AWS Secrets Manager
 WORKER_WEBAPP_HOST=http://web-backend:8000
-WORKER_WEBAPP_TOKEN=<WEBAPP_TOKEN HERE, Step 6>
+WORKER_WEBAPP_TOKEN=<LEAVE BLANK FOR NOW, GENERATED LATER IN STEP 6>
 WORKER_CSTOR_DATA_DIR=/mnt/cstor_cache
 WORKER_REDIS_HOST=msgbroker
-WORKER_REDIS_PORT=6379
-WORKER_REDIS_PASSWD=<REDIS_PASSWORD_HERE>
+WORKER_REDIS_PORT=6379 # Default port that Redis listens on.
+WORKER_REDIS_PASSWD=<REDIS_PASS HERE> # Randomly generated, user-supplied alphanumeric password to use for authenticating to Redis
 ```
 
 From now on we will refer to `~/hackathon/Lyve-Cloud-Solutions-Sample/hackathon-submissions/s3-data-migration-cstor` as `$PROJ`
@@ -234,7 +252,7 @@ sudo docker ps
 The background worker running the S3 bucket migrations require access to the Django REST API to update progress and task status.
 We will need to create a new user and token for the background worker using the `siteadmin` superuser account we created in the previous step
 
-1. Login with the superuser account at `http://<server_public_ip>:8000/admin`
+1. Login with the superuser account at `http://192.168.1.2:8082/admin`
 
 2. Click on `Users` tab on the left, followed by `Add User Button`
 
@@ -265,7 +283,6 @@ We will need to create a new user and token for the background worker using the 
 ### Step 7. Setup and run the Dramatiq background worker
 
 Before we start Step 7, kindly ensure the following is working.
-- Django REST API is up and running at http://<server_public_up>:8000
 - We have the AWS Credentials for accessing AWS Secrets manager from **Step 2**
 - We have the djoser token generated in **Step 6**
 - Redis Server is running with docker compose from **Step 5**
@@ -276,7 +293,18 @@ Before we start Step 7, kindly ensure the following is working.
 Update the `.env` file with the generated token from Step 6.
 
 ```bash
+---SNIPPET---
+WORKER_WEBAPP_TOKEN=<REPLACE WITH GENERATED TOKEN IN STEP 6>
+---SNIPPET---
 ```
+
+Then run the following commands,
+
+```bash
+$ cd Lyve-Cloud-Solutions-Samples/hackathon-submissions/s3-data-migration-cstor
+$ docker compose up -d web-worker-1
+```
+
 
 ## Tested by
 
