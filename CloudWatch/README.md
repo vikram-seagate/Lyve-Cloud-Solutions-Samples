@@ -73,7 +73,6 @@ Here's what you'll need:
 ### Step 4: Set up your environment
 1. Edit config.json file
     * bucket_name - The name of the bucket from which the audit logs will be taken.
-    * output_bucket - The name of the bucket to which the integration audit logs will be written.
     * log_type - The type of audit logs to be captured (S3/IAM/Console).
     * mode - The mode in which the integration will run. keep empty for new audit logs only, "all" for all existing audit logs, or specify a date in a format "mm/dd/yy".
     * log_group - Name of the log group in CloudWatch

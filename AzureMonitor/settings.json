@@ -1,0 +1,40 @@
+ ,{ 
+    "name": "LyveCloudS3APIEndpoint",
+    "value": "https://s3.<region>.lyvecloud.seagate.com",
+    "slotSetting": false
+  },
+  {
+    "name": "LyveCloudAccessKey",
+    "value": "",
+    "slotSetting": false
+  },
+  {
+    "name": "LyveCloudSecretKey",
+    "value": "",
+    "slotSetting": false
+  },
+  {
+    "name": "AuditLogsBucketName",
+    "value": "",
+    "slotSetting": false
+  },
+  {
+    "name": "LogAnalyticsWorkspaceID",
+    "value": "",
+    "slotSetting": false
+  },
+  {
+    "name": "LogAnalyticsKey",
+    "value": "",
+    "slotSetting": false
+  },
+  {
+    "name": "StartTime",
+    "value": "",
+    "slotSetting": false
+  },
+  {
+    "name": "LogType",
+    "value": "S3",
+    "slotSetting": false
+  }

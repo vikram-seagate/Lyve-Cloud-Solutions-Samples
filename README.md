@@ -17,11 +17,34 @@ Notice the integration solutions are not part of the Lyve Cloud product. The int
 - Have a question? Let's have a [discussion](https://github.com/Seagate/Lyve-Cloud-solutions-samples/discussions) (don't be shy).
 - Want to create and contribute your own solution? Read our [Contribution Guide](CONTRIBUTING.md).
 
-## Integration Solutions
-1. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.](CloudWatch/)
-2. [Calculating Lyve Cloud bucket metrics using AWS Lambda and displays them in AWS CloudWatch.](bucket-metrics-collection/)
-3. [On-demand one-way sync of local directory with Lyve Cloud bucket.](s3sync-local-to-lyvecloud/)
-4. [Migrating and one-way synchronizing data between AWS bucket to Lyve Cloud bucket.](syncer/)
-5. [Replicating new objects created in AWS S3 bucket to a Lyve Cloud bucket using AWS Lambda.](s3-replication-to-lyvecloud/)
+# Integration Solutions
+*Please click on the arrows to expand !*
+<details><summary>Migrating and Syncing to LyveCloud Soultions</summary> 
+
+| Solution|Source |Technology|Installation|
+|  --- |  --- | ---| ---|
+| 1. [On-demand sync of Linux local directory to LyveCloud bucket.](s3sync-local-to-lyvecloud/)| Linux |Cronjob|Manual
+| 2. [Migrating and syncing between AWS and LyveCloud buckets.](syncer/)|AWS|AWS Lambda|Cli-Tool|
+| 3. [Replicating new objects created in AWS S3 bucket to a Lyve Cloud bucket.](s3-replication-to-lyvecloud/)|AWS|AWS Lambda|Manual|
+
+</details>
+
+<details><summary>Pull and send audit logs from LyveCloud to different monitoring infrastructure </summary> 
+
+| Solution|Monitoring Infrastructure|Technology|
+| :---:| :---:| :---:|
+| 1. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.](CloudWatch/)|CloudWatch|Docker Container|
+| 2. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in Azure Monitor(Log Analytics).](AzureMonitor/)| AzureMonitor|Function app|
+
+</details>
+
+<details><summary>Calculating Lyve Cloud bucket metrics</summary> 
+
+| Solution|Monitoring Infrastructure|Technology|
+| :---:| :---:| :---:|
+| 1. [Calculating Lyve Cloud bucket metrics and displaying them in AWS CloudWatch.](bucket-metrics-collection/)|CloudWatch|AWS Lambda|
+
+</details>
+
 
 The repository is licensed under the [Apache 2.0 License](LICENSE).
