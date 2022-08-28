@@ -18,7 +18,7 @@ Notice the integration solutions are not part of the Lyve Cloud product. The int
 - Want to create and contribute your own solution? Read our [Contribution Guide](CONTRIBUTING.md).
 
 # Integration Solutions
-*Please click on the arrows to expand !*
+*Please click on the arrows to expand*
 <details><summary>Migrating and Syncing to LyveCloud Soultions</summary> 
 
 | Solution|Source |Technology|Installation|
