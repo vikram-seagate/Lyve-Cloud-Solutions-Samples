@@ -7,7 +7,7 @@
 For signing off
 
 ## Introduction
-CSTOR S3 Data Migration solution consists of a dashboard frontend, webserver backend by Django and background workers powered by Dramatiq.
+CSTOR S3 Data Migration solution consists of a dashboard frontend, webserver backend by Django and background workers powered by Dramatiq.Signed
 
 ## Changelog
 
@@ -23,11 +23,6 @@ CSTOR S3 Data Migration solution consists of a dashboard frontend, webserver bac
 
 ### Software
 
-- Docker 20.10.5
-- Docker Compose v2.5.0
-
-#### For Development
-
 - Python 3.10.1
 - Pip 21.2.3
 - Python Global Packages
@@ -36,6 +31,8 @@ CSTOR S3 Data Migration solution consists of a dashboard frontend, webserver bac
 
 - Nodejs v16.15.0
 - NPM 8.5.5
+- Docker 20.10.5
+- Docker Compose v2.5.0
 - RocksDB Dependencies
    - sudo apt-get install -y librocksdb-dev liblz4-dev libsnappy-dev
 
@@ -88,13 +85,19 @@ CSTOR S3 Data Migration solution consists of a dashboard frontend, webserver bac
 
 Videos are available for the setup
 
-Part 1: Dramatiq Backend Worker and Frontend Setup
+Part 1: Secrets Manager, Docker, Redis setup
+[Part 1](https://4pqfyjuvjh.vmaker.com/record/Zx0YWD4uH6nFwUTX/)
 
-[Part 1](https://4pqfyjuvjh.vmaker.com/record/0f0gsAWJXuVp7eZO/)
+Part 2: Python, Django Setup
+[Part 2](https://4pqfyjuvjh.vmaker.com/record/KwlJUP0ZphoqnVIz/)
 
-Part 2: New user account setup and new migration demo
+Part 3: Dramatiq Backend Worker and Frontend Setup
 
-[Part 2](https://4pqfyjuvjh.vmaker.com/record/nUVomsnKdq52Mwi2)
+[Part 3](https://4pqfyjuvjh.vmaker.com/record/0f0gsAWJXuVp7eZO/)
+
+Part 4: New user account setup and new migration demo
+
+[Part 4](https://4pqfyjuvjh.vmaker.com/record/nUVomsnKdq52Mwi2)
 
 
 ### Step 1. Retrieve required credentials for AWS and Lyvecloud S3 Buckets
@@ -139,65 +142,18 @@ Please note that you will not be able to see the secret key again after leaving 
 $ sudo apt-get update -y; sudo apt-get install git
 ```
 
-### Step 4. Clone the project repo and populate .env file
+### Step 4. Clone the project repo
 
 ```bash
 $ mkdir ~/hackathon
 $ cd ~/hackathon
-$ git clone https://github.com/Segate/Lyve-Cloud-Solutions-Samples.git
-$ cd Lyve-Cloud-Solutions-Sample/hackathon-submissions/s3-data-migration-cstor
+$ git clone https://github.com/codewitholi/Lyve-Cloud-Solutions-Samples.git
+$ cd Lyve-Cloud-Solutions-Sample/integration-template
 ```
 
-Create a new file `.env` in the project folder. Please use `example.env` for reference, only change values enclosed with `<>` and remove the `<>`.
+From now on we will refer to `~/hackathon/Lyve-Cloud-Solutions-Sample/integration-template` as `$PROJ`
 
-To generate strong passwords, users can use the [Lastpass](https://www.lastpass.com/features/password-generator) website.
-Passwords should be at least 15 characters long and alpha-numeric.
-
-Use different generated passwords for the following variables in `.env` file, using the site above.
-
-- REDIS_PASS
-- SECRET_KEY
-- DJANGO_SUPERUSER_PASSWORD
-
-Please **re-use** the REDIS_PASS password for the following:
-- WORKER_REDIS_PASSWD
-
-For the example below, replace the placeholder `<>` with your value.
-For example, replace `REDIS_PASS=<GENERATED PASSWORD HERE>` with `REDIS_PASS=YourStrongPassword123456`
-
-The solution is expected to be deployed in VM, load balancer, Kubernetes environment with its own IP.
-
-In the example below, we assume the VM IP address is `192.168.1.2`, with port `8082`.
-
-
-```bash
-REDIS_PASS=<GENERATED PASSWORD HERE>
-SECRET_KEY=<GENERATED PASSWORD HERE>
-ALLOWED_HOSTS=127.0.0.1,localhost,192.168.1.2:8082
-CSRF_TRUSTED_ORIGINS=http://192.168.1.2:8082
-REDIS_CONN=redis://:<REDIS PASS HERE>@msgbroker:6379  # 6379 is the default port that Redis listens on
-
-WEB_API_PORT=8082
-WEB_API=http://192.168.1.2:8082
-WEB_WS=ws://192.168.1.2:8082/ws/
-
-DJANGO_SUPERUSER_USER=<DJANGO USERNAME> # Username to authenticate for Django
-DJANGO_SUPERUSER_EMAIL=<DJANGO SUPER USER EMAIL> # Email to use for Django super user.
-DJANGO_SUPERUSER_PASSWORD=<DJANGO SUPER USER PASSWORD> # Randomly generated, user-supplied alphanumeric password for the Django Superuser
-
-WORKER_AWS_USER=<AWS Access Key Id> # AWS Credential that can read and write to AWS Secrets Manager
-WORKER_AWS_SECRET=<AWS Secret Access Key> # AWS Credential that can read and write to AWS Secrets Manager
-WORKER_WEBAPP_HOST=http://web-backend:8000
-WORKER_WEBAPP_TOKEN=<LEAVE BLANK FOR NOW, GENERATED LATER IN STEP 6>
-WORKER_CSTOR_DATA_DIR=/mnt/cstor_cache
-WORKER_REDIS_HOST=msgbroker
-WORKER_REDIS_PORT=6379 # Default port that Redis listens on.
-WORKER_REDIS_PASSWD=<REDIS_PASS HERE> # Randomly generated, user-supplied alphanumeric password to use for authenticating to Redis
-```
-
-From now on we will refer to `~/hackathon/Lyve-Cloud-Solutions-Sample/hackathon-submissions/s3-data-migration-cstor` as `$PROJ`
-
-### Step 5. Setting up Docker and Docker Compose
+### Step 5. Setting up Docker and Docker Compose for Redis Server
 
 1. Install dependencies for docker
 
@@ -240,19 +196,167 @@ sudo docker run hello-world
 sudo docker compose
 ```
 
-6. Setup all components
+6. Setup Redis Instance with docker compose
+
 ```bash
-cd $PROJ/main
+cd $PROJ/core
 sudo docker compose up -d
 sudo docker ps
+
+CONTAINER ID   IMAGE              COMMAND                  CREATED         STATUS         PORTS                                         NAMES
+27a1fe55f168   redis:6.2-alpine   "docker-entrypoint.s…"   7 seconds ago   Up 6 seconds   0.0.0.0:16379->6379/tcp, :::16379->6379/tcp   core-broker-1
 ```
 
-### Step 6. Create djoser user and token for background worker
+7. Test connecting to Redis Instance
+
+```bash
+telnet 127.0.0.1 16379
+
+> keys *
+-NOAUTH Authentication required.
+```
+
+Redis Instance setup is completed.
+
+### Step 6. Installing Python 3.10.1 and setting up Django Dashboard REST API Server
+
+We recommend using pyenv to install Python on the system, instructions below.
+
+1. Install python build dependencies
+
+```bash
+sudo apt-get -y install make build-essential libssl-dev zlib1g-dev \
+libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+```
+
+2. Install pyenv with the setup script
+
+```bash
+curl https://pyenv.run | bash
+```
+
+3. Add the following line to ~/.bashrc
+
+```bash
+eval "$(pyenv virtualenv-init -)"
+```
+
+4. Add the following line to ~/.profile and ~/.bash_profile
+
+```bash
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+```
+
+5. Load the new environment with `bash` and test pyenv
+
+```bash
+$ bash
+$ which pyenv
+```
+
+6. Install Python 3.10.1
+
+```bash
+pyenv install 3.10.1
+pyenv global 3.10.1
+
+which python
+> /home/<user>/.pyenv/shims/python
+
+python --version
+> Python 3.10.1
+```
+
+7. Install nox (script automation) and poetry (package manager)
+
+```bash
+pip install nox poetry
+```
+
+8. Install rocksdb dependencies
+
+```bash
+sudo apt-get install -y librocksdb-dev liblz4-dev libsnappy-dev
+```
+
+9. Add private repo dependencies to Poetry
+
+Add the following lines to `~/.pypirc`
+
+```bash
+[gitlab]
+repository = https://gitlab.com/api/v4/projects/35836634/packages/pypi
+username = __token__
+password = glpat-sexaxPLC88ed3AXs7_oV
+```
+
+Run the following commands
+
+```bash
+poetry config repositories.gitlab https://gitlab.com/api/v4/projects/35836634/packages/pypi/simple
+poetry config http-basic.gitlab __token__  glpat-sexaxPLC88ed3AXs7_oV
+```
+
+11. Install Django and other dependencies for **Dashboard Backend**
+
+This will create a new Python virtualenv at `$PROJ/webapp/.nox/venv`
+
+```bash
+cd $PROJ/webapp
+nox -s venv -- init
+
+# Load the virtual environment
+source .nox/venv/bin/activate
+
+(venv)$
+```
+
+12. Create the local sqlite3 database for Django
+
+```bash
+(venv)$ cd $PROJ/webapp/src/cstor/dashboard
+
+(venv)$ python manage.py migrate
+```
+
+13. Create a new superuser for Django Admin
+
+```bash
+(venv)$ python manage.py createsuperuser
+
+Username (leave blank to use 'kirito'): siteadmin
+Email address:
+Password:
+Password (again):
+Superuser created successfully.
+```
+
+14. Edit the ALLOWED_HOSTS variable in `$PROJ/webapp/src/cstor/dashboard/dashboard/settings.py`
+
+```python
+# Change this
+ALLOWED_HOSTS = ["<server_public_ip>"]
+```
+
+15. Start the dashboard backend with the following command:
+
+```bash
+(venv)$ python manage.py runserver 0.0.0.0:8000
+```
+
+Check that we are able to access the admin dashboard at `http://<server_public_ip>:8000/admin`
+
+![DB_1](https://github.com/codewitholi/lyc-hackathon-pages/raw/main/dashboard_1.PNG)
+
+### Step 7. Create djoser user and token for background worker
 
 The background worker running the S3 bucket migrations require access to the Django REST API to update progress and task status.
 We will need to create a new user and token for the background worker using the `siteadmin` superuser account we created in the previous step
 
-1. Login with the superuser account at `http://192.168.1.2:8082/admin`
+1. Login with the superuser account at `http://<server_public_ip>:8000/admin`
 
 2. Click on `Users` tab on the left, followed by `Add User Button`
 
@@ -280,30 +384,131 @@ We will need to create a new user and token for the background worker using the 
 
 ![DB_8](https://github.com/codewitholi/lyc-hackathon-pages/raw/main/dashboard_8.PNG)
 
-### Step 7. Setup and run the Dramatiq background worker
+### Step 8. Setup and run the Dramatiq background worker
 
-Before we start Step 7, kindly ensure the following is working.
+Before we start Step 8, kindly ensure the following is working.
+- Django REST API is up and running at http://<server_public_up>:8000
 - We have the AWS Credentials for accessing AWS Secrets manager from **Step 2**
-- We have the djoser token generated in **Step 6**
+- We have the djoser token generated in **Step 7**
 - Redis Server is running with docker compose from **Step 5**
+- Python 3.10.1 and RocksDB dependencies is installed from **Step 6**
 
+1. Create the data directory for the Dramatiq background worker
+
+```bash
+sudo mkdir -p /opt/cstor_cache
+sudo chown <user>: -R /opt/cstor_cache
+```
+
+2. Install python dependencies for the background worker
+
+This will create a new virtualenv in $PROJ/core/.nox/venv
+
+```bash
+# IMPORTANT! Run deactivate if we are still in the previous virtualenv
+(venv)$ deactivate
+$
+#
+cd $PROJ/core
+
+nox -s venv -- init
+
+source .nox/venv/bin/activate
+
+(venv)$
+```
 
 3. Setup the environment for the Dramatiq background worker
 
-Update the `.env` file with the generated token from Step 6.
+Place the following lines in `worker.env`
 
 ```bash
----SNIPPET---
-WORKER_WEBAPP_TOKEN=<REPLACE WITH GENERATED TOKEN IN STEP 6>
----SNIPPET---
+# AWS Credentials to access AWS Secrets Manager from Step 2
+export AWS_ACCESS_KEY_ID="xxx"
+export AWS_SECRET_ACCESS_KEY="yyy"
+# Dashboard Backend Host
+export WEBAPP_HOST="http://<server_public_ip>:8000"
+# Dashboard Backend Token for Dramatiq Worker from Step 7
+export WEBAPP_TOKEN="<token>"
+# Local filepath for the job cache
+export CSTOR_DATA_DIR="/opt/cstor_cache"
+export REDIS_HOST="127.0.0.1"
+export REDIS_PORT="16379"
+export REDIS_PASSWD="Test123!"
 ```
 
-Then run the following commands,
+Then run the following command
 
 ```bash
-$ cd Lyve-Cloud-Solutions-Samples/hackathon-submissions/s3-data-migration-cstor
-$ docker compose up -d web-worker-1
+(venv)$ source worker.env
 ```
+
+4. Start the Dramatiq background worker with 4 processes and 10 threads each
+
+```bash
+dramatiq-gevent cstor.s3.tasks.main -p 4 -t 10
+```
+
+The Dramatiq background worker is now running!
+
+### Step 9. Setup the Frontend (VueJS)
+
+We recommend installing using the nvm (Node Version Manager) tool
+
+1. Use the nvm installer script
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+```
+
+2. Enter into a new bash session to have `nvm` in PATH
+
+```bash
+bash
+```
+
+3. Install NodeJS v16.15.0
+
+```bash
+nvm install 16.15.0
+nvm use 16.15.0
+```
+
+4. Install frontend dependencies
+
+```bash
+cd $PROJ/webapp/src/cstor/frontend
+
+npm i
+```
+
+5. Edit the server ip in `$PROJ/webapp/src/cstor/frontend/src/main.js`
+
+```javascript
+// Change this!
+axios.defaults.baseURL = "http://<server_public_ip>:8000";
+
+createApp(App)
+  .use(store)
+  .use(router, axios)
+  .use(
+    wsService,
+    {
+      store,
+      url: "ws://<server_public_ip>:8000/ws/",  // Change this!
+    })
+  .mount("#app");
+```
+
+6. Start the frontend service
+
+```bash
+cd $PROJ/webapp/src/cstor/frontend
+
+npm run serve
+```
+
+The frontend is now serving at `http://<server_public_ip>:8080`
 
 
 ## Tested by
