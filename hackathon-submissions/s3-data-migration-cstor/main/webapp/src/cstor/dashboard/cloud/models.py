@@ -90,7 +90,7 @@ class Bucket(models.Model):
     slug = models.SlugField()
     description = models.TextField(blank=True, null=True)
     cloud_region = models.CharField(max_length=32, blank=True, null=True)
-    cloud_provider = models.OneToOneField(
+    cloud_provider = models.ForeignKey(
         CloudProvider,
         on_delete=models.CASCADE,
     )
