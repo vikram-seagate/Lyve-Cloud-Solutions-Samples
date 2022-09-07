@@ -154,3 +154,28 @@ This folder contains all the images used in this `README.md`
 ## Tested by
 
 * May 23, 2022: Tang Yun (yun005@e.ntu.edu.sg) on Windows 10. See [TESTS.md](TESTS.md) for details.
+
+## Execute outside docker containers
+
+* frontend:
+    * Open a terminal and `cd` into the `code/frontend` folder
+    * install dependencies `npm install`
+    * start frontend development server: `npm start`
+
+* backend:
+    * Open a terminal and `cd` into the `code/backend` folder
+    * install dependencies `npm install`
+    * run `DATABASE_IP=localhost BACKEND_IP=localhost PASSPHRASE=123 node index.js`
+
+* migrationWorker:
+    * Open a terminal and `cd` into the `code/migrationWorker` folder
+    * install dependencies `npm install`
+    * run `DATABASE_IP=localhost BACKEND_IP=localhost PASSPHRASE=123 node index.js`
+
+* synchronizationWorker:
+    * Open a terminal and `cd` into the `code/synchronizationWorker` folder
+    * install dependencies `npm install`
+    * run `DATABASE_IP=localhost BACKEND_IP=localhost PASSPHRASE=123 node index.js`
+
+* MongoDB: you may start mongo db on your own, or you may start the mongo db using the provided `docker-compose.yml`
+    * `docker compose up mongoDB` 
