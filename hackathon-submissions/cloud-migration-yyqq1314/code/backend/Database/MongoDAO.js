@@ -4,7 +4,7 @@ const {Mutex} = require("async-mutex");
 const SynchronizationTaskSchema = require("./SynchronizationTaskSchema");
 const SynchronizationJobSchema = require("./SynchronizationJobSchema");
 
-const MongoDBURL = `mongodb://${process.env.BACKEND_IP}:27017`;
+const MongoDBURL = `mongodb://${process.env.DATABASE_IP}:27017`;
 
 class MongoDAO {
     constructor() {

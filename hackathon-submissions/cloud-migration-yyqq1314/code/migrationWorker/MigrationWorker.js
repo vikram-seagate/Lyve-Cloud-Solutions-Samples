@@ -188,6 +188,7 @@ class MigrationWorker {
                     }
                     case "fromGoogle": {
                         fileToMigrate = await GoogleProxyExecute(source_credentials, "download", undefined, source_project_id, source_bucket, source_obj_key);
+                        fileToMigrate = {Body: fileToMigrate};
                         break;
                     }
                     default: {
