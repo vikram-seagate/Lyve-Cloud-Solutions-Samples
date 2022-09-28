@@ -78,12 +78,12 @@ e.g. http://127.0.0.1:8080/watch?v=my-video.mp4&bucket=my-media-bucket
 
 This link can be played via browser or media player.
 <p align="center">
-  <img src="/images/streaming-video.png" width="70%" height="70%"><br>
+  <img src="../media-streamer/images/streaming-video.png" width="70%" height="70%"><br>
 </p>
 
 **Additional Features:**
 Besides streaming media, the following requests are supported by the solution:
-* List Bucket - 
+* List Bucket
 * List Objects
 * Create Bucket
 * Upload Object
