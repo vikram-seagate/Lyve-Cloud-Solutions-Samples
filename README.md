@@ -19,22 +19,22 @@ Notice the integration solutions are not part of the Lyve Cloud product. The int
 
 # Integration Solutions
 *Please click on the arrows to expand*
-<details><summary>Migrating and Syncing to LyveCloud Soultions</summary> 
+<details><summary>Migrating and Syncing to Lyve Cloud solutions</summary> 
 
 | Solution|Source |Technology|Installation|
 |  --- |  --- | ---| ---|
-| 1. [On-demand sync of Linux local directory to LyveCloud bucket.](s3sync-local-to-lyvecloud/)| Linux |Cronjob|Manual
-| 2. [Migrating and syncing between AWS and LyveCloud buckets.](syncer/)|AWS|AWS Lambda|Cli-Tool|
+| 1. [On-demand sync of Linux local directory to Lyve Cloud bucket.](s3sync-local-to-lyvecloud/)| Linux |Cronjob|Manual
+| 2. [Migrating and syncing between AWS and Lyve Cloud buckets.](syncer/)|AWS|AWS Lambda|Cli-Tool|
 | 3. [Replicating new objects created in AWS S3 bucket to a Lyve Cloud bucket.](s3-replication-to-lyvecloud/)|AWS|AWS Lambda|Manual|
 
 </details>
 
-<details><summary>Pull and send audit logs from LyveCloud to different monitoring infrastructure </summary> 
+<details><summary>Pull and send audit logs from Lyve Cloud to different monitoring infrastructure </summary> 
 
 | Solution|Monitoring Infrastructure|Technology|
 | :---:| :---:| :---:|
-| 1. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.](CloudWatch/)|CloudWatch|Docker Container|
-| 2. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in Azure Monitor(Log Analytics).](AzureMonitor/)| AzureMonitor|Function app|
+| 1. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.](cloudwatch/)|CloudWatch|Python Script|
+| 2. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in Azure Monitor(Log Analytics).](azure-monitor/)| Azure Monitor|Function app|
 
 </details>
 
