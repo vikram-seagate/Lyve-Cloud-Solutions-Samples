@@ -40,11 +40,31 @@ Notice the integration solutions are not part of the Lyve Cloud product. The int
 
 <details><summary>Calculating Lyve Cloud bucket metrics</summary> 
 
-| Solution|Monitoring Infrastructure|Technology|
-| :---:| :---:| :---:|
-| 1. [Calculating Lyve Cloud bucket metrics and displaying them in AWS CloudWatch.](bucket-metrics-collection/)|CloudWatch|AWS Lambda|
+[bucket-metrics-collection](bucket-metrics-collection/)
+
+The purpose of this integration solution is to demonstrate how Lyve Cloud bucket metrics can be securely pulled using AWS Lambda and displayed in AWS CloudWatch. The bucket metrics displayed in this solution are: number of objects and bucket size. These metrics are calculated for the buckets that Lyve Cloud credentials can access. Once the metrics are pulled, it can be displayed using AWS CloudWatch dashboards.
 
 </details>
+
+<details><summary>Streaming media from Lyve Cloud bucket</summary> 
+
+[media-streamer](media-streamer/)
+
+Middleware solution built with Python and FastAPI, which is optimized for video streaming.
+
+It serves as a middleware from the browser request to the requested object, which is the video file. The implementation is based on the Range Requests Specification in RFC 7233.
+
+</details>
+
+
+<details><summary>Terraform Provider for Lyve Cloud</summary>
+
+[Terraform Lyve Cloud provider](https://github.com/Seagate/terraform-provider-lyvecloud)
+
+Terraform provider plugin for managing Lyve Cloud S3 buckets, objects, permissions and service accounts.
+
+</details>
+
 
 
 The repository is licensed under the [Apache 2.0 License](LICENSE).
