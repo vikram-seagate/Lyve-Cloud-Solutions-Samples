@@ -1,0 +1,6 @@
+filename,size,start,end
+four.txt,61852,512,62363
+one.txt,42,62976,63017
+testfile.txt,19,64000,64018
+three.txt,6947,65024,71970
+two.txt,315,72704,73018
