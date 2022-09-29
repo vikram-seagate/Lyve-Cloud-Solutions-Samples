@@ -1,5 +1,5 @@
 
-# Using Tar File Index to extract data efficiently
+# Using tar file index to extract data efficiently
 
              _____                      _____                _
             |_   _|  __ _  _ __        |_   _|  ___    ___  | |
@@ -14,13 +14,13 @@ This tool provides a script to partial extract files from a tar archive which re
 
 The idea is to minimize the number of uploads to an S3 bucket by tarring a lot of small files into a tar archive, and download only the necessary files inside the tar archive at a later time. This helps with a better throughput during upload process, and saves time and network costs during the download process.
 
-To only get a small chunk of the files that are part of the tar archive, this tool allows to create a index file, which is used to find the location of each file within the tar. The start and end location of the files is used along with get byte range operation on an S3 object to achieve this.
+To only get a small chunk of the files that are part of the tar archive, this tool allows to create a index file, which is used to find the location of each file within the tar. The start and end location of the files is used along with *get byte range* operation on an S3 object to achieve this.
 
 ## Requirements
 * Ability to run Python 3.8 and above
 
 ## Known Limitations 
-This is a proof of concept for Tar file Indexing capabilities and Partial Tar File retrieval capabilities. 
+This is a proof of concept for tar file Indexing capabilities and partial tar File retrieval capabilities. 
 Additional features or customization is left up to the reader.
 Some of the features that can be added: 
 * Indexing and extraction of compressed tar file
