@@ -1,38 +1,29 @@
 """
-Tar File Index and Extract Tool
-
-This script will perform 2 functions.
-1. Index a give tar file or tar files in a directory
-2. Extract only those files inside a tar given the names of the files inside the tar and the tar file name from an
-S3 bucket.
-
-The idea is to minimize uploads to an s3 bucket by taring a lot of small files into a big tar.
-Then upload the tar to a bucket. In order to only pull out small chunk of the files in a big tar, the index is used to
-find the location of each file within the tar. The start and end location of the files is used along with get byterange
-operation on an S3 bucket to achieve this.
+This tool provides a script to partially extract files from a tar object that resides inside your S3 bucket.
 
 | $File: tar_tool.py $
 | $Revision: #1 $
 | $Author: arati.kulkarni@seagate.com $
 | $DateTime: 2021/11/12 12:34:29 $
-
 """
 
-from argparse import ArgumentParser
-import tarfile
 import os
-import datetime
-import boto3
 import csv
+import boto3
+import tarfile
+import datetime
 from art import tprint
+from argparse import ArgumentParser
+from botocore.exceptions import ClientError
 
 def extract_files(filenames, outputdir, conn_details, bucketname):
     '''
-    Extract given files from a tarfile
-    :param filenames: tarfilename,file0,file1.. Files to be extracted from tarfilename
-    :param outputdir: Directory to store extracted files
-    :param conn_details: S3 Connection details
-    :param bucketname:
+    Extract given files from a tar file.
+
+    :param filenames: tarfilename,file0,file1.. files to be extracted from tarfilename
+    :param outputdir: Directory to store the extracted files
+    :param conn_details: S3 connection details
+    :param bucketname: Name of the bucket that containts the tar file
     :return:
     '''
 
@@ -52,7 +43,7 @@ def extract_files(filenames, outputdir, conn_details, bucketname):
             reader = csv.reader(indf)
             index = {rows[0]: rows for rows in reader}
     except FileNotFoundError:
-        print(f"!!!Index file for tarfile {tarfilename} does not exist, please create index before extracting!!!")
+        print(f"!!!Didn't found index file for {tarfilename} locally!!!")
         print('Exiting!')
         exit()
 
@@ -62,40 +53,80 @@ def extract_files(filenames, outputdir, conn_details, bucketname):
     print(f'\nDone extracting {filenames} to {outputdir}')
 
 
-def fetch_index(indexfile, outputdir, bucketname, s3_config):
+def extract_range(args, outputdir, conn_details, bucketname):
     '''
-    Fetch Index file for a tar file before extracting partial object
-    :param indexfile: Index file
-    :param outputdir: Destination where downloaded files will be stored
-    :param bucketname: Bucket where the tar object resides
-    :param s3_config: S3 Connection Object
+    Extract given range from a tar file.
+
+    :param args: tarfilename,start-range,end-range,destination-file-name.
+    :param outputdir: Directory to store the extracted file
+    :param conn_details: S3 connection details
+    :param bucketname: Name of the bucket that containts the tar file
     :return:
     '''
-    print(f"Collecting Index file {indexfile}")
+
+    s3 = boto3.resource('s3', aws_access_key_id=conn_details["accessKey"],
+                        aws_secret_access_key=conn_details["secretKey"], endpoint_url=conn_details["endpoint"], )
+
+    tarfilename = args[0]
+    startrange = args[1]
+    endrange = args[2]
+    filename = args[3]
+
+    outputdir = os.path.join(outputdir, os.path.basename(tarfilename).split('.')[0])
+    ensure_dir(outputdir)
+
+    print(f'Extracting file to {outputdir}')
+
+    fetch_object_by_range(startrange, endrange, filename, outputdir, tarfilename, bucketname, s3)
+
+    print(f'\nDone extracting range {startrange},{endrange} to {outputdir}')    
+
+
+def fetch_index(indexfile, outputdir, bucketname, s3_config):
+    '''
+    Fetch index file for the tar file before extracting partial object.
+
+    :param indexfile: Index file
+    :param outputdir: Directory to store the extracted file
+    :param bucketname: Name of the bucket that containts the tar file
+    :param s3_config: S3 connection object
+    :return:
+    '''
+
+    print(f"Collecting index file {indexfile}")
     index_object = s3_config.Object(bucketname, indexfile)
-    response = index_object.get()
+    try:
+        response = index_object.get()
+    except ClientError as ex:
+        if ex.response['Error']['Code'] == 'NoSuchKey':
+            print(f"!!!Index file {indexfile} is missing in the bucket, please create and upload index before extracting!!!")
+            print('Exiting!')
+            exit()
+        else:
+            raise
 
     with open(os.path.join(outputdir, indexfile), 'wb') as outfile:
         outfile.write(response['Body']._raw_stream.data)
-    print(f"Done writing the Index file {indexfile}")
+    print(f"Done writing the index file {indexfile}")
 
 def fetch_object_by_range(start, end, filename, outputdir, tarfilename, bucketname, s3_config):
     '''
-    Fetch object given its byte range
+    Fetch object given its byte range.
+
     :param start: Byte Range - start
     :param end: Byte Range - end
-    :param filename: File name to be downloaded, will be used to save the byte range into this filename
-    :param outputdir: Destination where the file will be saved
-    :param tarfilename: Tar object name
-    :param bucketname: Bucket name where tar resids
-    :param s3_config: S3 Connection object
+    :param filename: Filename to be downloaded, will be used to save the byte range into this filename
+    :param outputdir: Directory to store the extracted file
+    :param tarfilename: The tar object name
+    :param bucketname: Name of the bucket that containts the tar file
+    :param s3_config: S3 connection object
     :return:
     '''
 
     partial_obj = s3_config.Object(bucketname, os.path.basename(tarfilename))
 
     byterange = f"bytes={start}-{end}"
-    print(f"Collecting {filename} from Byte Range: {byterange}")
+    print(f"Collecting {filename} from byte range: {byterange}")
 
     response = partial_obj.get(
         Range=byterange,
@@ -109,10 +140,12 @@ def fetch_object_by_range(start, end, filename, outputdir, tarfilename, bucketna
 
 def index_tarfile(tarfilename):
     '''
-    Index given tar file, produce CSV, with filename,size,startbyte,endbyte
-    :param tarfilename: Tar File name that is to be indexed
+    Index a given tar file. Produces CSV with filename, size, start-byte, end-byte.
+
+    :param tarfilename: A tar filename to be indexed
     :return:
     '''
+
     index = [["filename", "size", "start", "end"]]
     with tarfile.open(tarfilename, 'r') as tfile:
         for member in tfile.getmembers():
@@ -129,10 +162,12 @@ def index_tarfile(tarfilename):
 
 def get_connection_details(configfile):
     '''
-    Get Connection Details from Config File
-    :param configfile: path to config file
+    Get connection details from config file.
+
+    :param configfile: Path to config file
     :return:
     '''
+
     conn_details = {}
     with open(configfile) as f:
         for line in f.readlines():
@@ -141,10 +176,12 @@ def get_connection_details(configfile):
 
 def process_directory(path):
     '''
-    Process and Index all tar files in the directory
-    :param path: directory to be processed
+    Process and index all tar files in the directory.
+
+    :param path: Directory to be processed
     :return:
     '''
+
     for (dirpath, dirnames, filenames) in os.walk(path):
         for filename in filenames:
             if tarfile.is_tarfile(os.path.join(dirpath, filename)):
@@ -152,21 +189,25 @@ def process_directory(path):
 
 def dump_cli_options(args):
     '''
-    Dump CLI options this program was run with
+    Dump CLI options this program was run with.
+
     :param args: All arguments
     :return:
     '''
-    print(f'Running Tar Tool with following options: ')
+
+    print(f'Running the tar tool with the following options: ')
     for k, v in vars(args).items():
         print(f'   {k}: {v}')
 
 
 def ensure_dir(path):
     '''
-    Check if this directory exists and if not create them
-    :param path:
+    Check if this directory exists, and if not, create them.
+
+    :param path: The directory path to check
     :return:
     '''
+
     if not os.path.exists(path):
         os.makedirs(path)
     return path
@@ -174,15 +215,16 @@ def ensure_dir(path):
 if __name__ == '__main__':
     print('#' * 80)
     tprint("            Tar-Tool")
-    print('                      Tar File Index and Extract Tool \n')
+    print('                      A TAR File Index and Extract Tool \n')
     print('#' * 80)
     parser = ArgumentParser()
-    parser.add_argument("--tarfile", help="Name of the tarfile that needs to be indexed")
-    parser.add_argument("--path", help="Path to a directory containing tarfiles, all *.tar files in dir will be indexed")
-    parser.add_argument("--extract", help="Comma separated list of the tarfile and files to be extracted from that tarfile")
+    parser.add_argument("--tarfile", help="Name of the tar file that needs to be indexed")
+    parser.add_argument("--path", help="Path to a directory containing tar files, all *.tar files in dir will be indexed")
+    parser.add_argument("--extract", help="Comma separated list of the tar file and files to be extracted from that tar file")
+    parser.add_argument("--getrange", help="Comma separated list of the tar file, the range to be extracted from that tar file, and the destination filename")
     parser.add_argument("--outputpath", help="Path to a directory where extracted files will be kept", default=os.getcwd())
-    parser.add_argument("--bucketname", help="Name of the S3 bucket to get data from", default='tar-exp0')
-    parser.add_argument("--configfile", help="Path to config File",
+    parser.add_argument("--bucketname", help="Name of the bucket that containts the tar file", default='tar-exp0')
+    parser.add_argument("--configfile", help="Path to config file",
                         default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'conn.conf'))
     args = parser.parse_args()
 
@@ -192,11 +234,14 @@ if __name__ == '__main__':
     conn_details = get_connection_details(args.configfile)
 
     if args.tarfile:
-        print(f"Starting Indexing for {args.tarfile}")
+        print(f"Starting indexing for {args.tarfile}")
         index_tarfile(args.tarfile)
     elif args.path:
-        print(f"Starting Indexing for all tars in {args.path}")
+        print(f"Starting indexing for all tars in {args.path}")
         process_directory(args.path)
     elif args.extract:
         files_to_extract = args.extract.split(',')
         extract_files(files_to_extract, args.outputpath, conn_details, args.bucketname)
+    elif args.getrange:
+        range_to_extract = args.getrange.split(',')
+        extract_range(range_to_extract, args.outputpath, conn_details, args.bucketname)

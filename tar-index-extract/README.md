@@ -1,4 +1,3 @@
-
 # Using tar file index to extract data efficiently
 
              _____                      _____                _
@@ -10,30 +9,39 @@
 
 ## Introduction
 
-This tool provides a script to partial extract files from a tar archive which resides inside your S3 bucket.
+This tool provides a script to partially extract files from a tar object that resides inside your S3 bucket.
 
-The idea is to minimize the number of uploads to an S3 bucket by tarring a lot of small files into a tar archive, and download only the necessary files inside the tar archive at a later time. This helps with a better throughput during upload process, and saves time and network costs during the download process.
+The idea is to minimize the number of uploads to an S3 bucket by tarring several small files into a tar file and downloading only the necessary files from this tar file later. It helps with a better throughput during the upload process and saves time and network costs during the download process.
 
-To only get a small chunk of the files that are part of the tar archive, this tool allows to create a index file, which is used to find the location of each file within the tar. The start and end location of the files is used along with *get byte range* operation on an S3 object to achieve this.
+To only get some of the files that are part of the tar file, this tool allows to create an index file, which is used to find the location of each file within the tar. The start and end location of the files is used along with the *get byte range* operation on an S3 object to achieve this.
 
 ## Requirements
-* Ability to run Python 3.8 and above
+* [`Python 3.8`](https://www.python.org/downloads/) and above.
+* Lyve Cloud bucket credentials - Access Key, Secret Key, region and endpoint URL.
 
 ## Known Limitations 
-This is a proof of concept for tar file Indexing capabilities and partial tar File retrieval capabilities. 
+This is a proof of concept for tar file indexing capabilities and partial tar File retrieval capabilities. 
 Additional features or customization is left up to the reader.
 Some of the features that can be added: 
-* Indexing and extraction of compressed tar file
-* Safe storing of the credentials (currently stored in a plain text)
+* Indexing and extraction of compressed tar file.
+* Safe storing of the credentials (currently stored in a plain text).
 
 ## Running Steps
-
 **Step 1: Install required libraries**
 
 Run 
 ```pip install -r requirements.txt```
 
-**Step 2: Create index file of the tar**
+**Step 2: Set Lyve Cloud credentials**
+
+Replace the placeholders in config/conn.conf with valid credentials with access to the desired bucket.
+```
+endpoint=<Lyve Cloud Endpoint URL>
+accessKey=<Access Key to the Lyve Cloud API>
+secretKey=<Secret Key to the Lyve Cloud API>
+```
+
+**Step 3: Create index file of the tar**
 
 Run 
 ```python3 tar_tool.py --tarfile <path of the tar file>```
@@ -42,30 +50,21 @@ This will create an index file that you will need to upload with the tar file to
 
 Sample output for the command ```python3 tar_tool.py --tarfile C:\Users\akulkarni\tools\index-tar\tfile.tar```
 ```
-Running Tar Tool with following options:
+Running the tar tool with the following options:
    tarfile: C:\Users\akulkarni\tools\index-tar\tfile.tar
    path: None
    extract: None
    outputpath: C:\Users\akulkarni\tools
    bucketname: tar-exp0
    configfile: C:\Users\akulkarni\tools\index-tar\config\conn.conf
-Starting Indexing for C:\Users\akulkarni\tools\index-tar\tfile.tar
+Starting indexing for C:\Users\akulkarni\tools\index-tar\tfile.tar
 
 Done indexing tar C:\Users\akulkarni\tools\index-tar\tfile.tar,
 Index file: C:\Users\akulkarni\tools\index-tar\tfile.index
 ```
-**Step 3: Upload tar file**
+**Step 4: Upload tar file**
 
-Upload your tar file with the generated index file to your desired bucket.
-
-**Step 4: Set Lyve Cloud credentials**
-
-Replace the placeholders in config/conn.conf with valid credentials with access to the desired bucket.
-```
-endpoint=<Lyve Cloud Endpoint URL>
-accessKey=<Access Key to the Lyve Cloud API>
-secretKey=<Secret Key to the Lyve Cloud API>
-```
+Upload your tar file **with** the generated index file to your desired bucket.
 
 **Step 5: Extract files from the tar**
 
@@ -78,21 +77,29 @@ python3 tar_tool.py
 --outputpath <output path for files to be extracted>
 --bucket <name of your bucket>
 ```
-**Result**
 
+It is also possible to extract by specific byte range. This operation won't use the index file.
+```
+python3 tar_tool.py
+--getrange <tar filename>,<start-byte>,<end-byte>,<destination filename>
+--outputpath <output path for file to be extracted>
+--bucket <name of your bucket>
+```
+
+## Results 
 Your extracted files will be placed in the path that you have specifed.
 
 Sample output for the command ```python3 tar_tool.py --extract tfile.tar,one.txt,four.txt --outputpath C:\Users\akulkarni\tools\index-tar\output --bucket tar-exp0```
 ```
-Running Tar Tool with following options:
+Running the tar tool with the following options:
    tarfile: None
    path: None
    extract: tfile.tar,one.txt,four.txt
    outputpath: C:\Users\akulkarni\tools\index-tar\output
    bucketname: tar-exp0
    configfile: C:\Users\akulkarni\tools\index-tar\config\conn.conf
-Collecting Index file tfile.index
-Done writing the Index file tfile.index
+Collecting index file tfile.index
+Done writing the index file tfile.index
 Extracting files to C:\Users\akulkarni\tools\index-tar\output\tfile
 Collecting one.txt from Byte Range: bytes=62976-63017
 Done writing the file one.txt
@@ -102,25 +109,27 @@ Done writing the file four.txt
 Done extracting ['one.txt', 'four.txt'] to C:\Users\akulkarni\tools\index-tar\output\tfile
 ```
 
-**Usage**
+## Usage
 ```
 The usage of the tool is as follows:
 
 usage: tar_tool.py [-h] [--tarfile TARFILE] [--path PATH] [--extract EXTRACT]
-                   [--outputpath OUTPUTPATH] [--bucketname BUCKETNAME]
+                   [--getrange GETRANGE] [--outputpath OUTPUTPATH] [--bucketname BUCKETNAME]
                    [--configfile CONFIGFILE]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --tarfile TARFILE     Name of the tarfile that needs to be indexed
+  --tarfile TARFILE     Name of the tar file that needs to be indexed
   --path PATH           Path to a directory containing tarfiles, all *.tar
                         files in dir will be indexed
-  --extract EXTRACT     Comma separated list of the tarfile and files to be
-                        extracted from that tarfile
+  --extract EXTRACT     Comma separated list of the tar file and files to be 
+                        extracted from that tar file
+  --getrange GETRANGE   Comma separated list of the tar file, the range to be 
+                        extracted from that tar file, and the destination filename  
   --outputpath OUTPUTPATH
                         Path to a directory where extracted files will be kept
   --bucketname BUCKETNAME
-                        Name of the S3 bucket to get data from
+                        Name of the bucket that containts the tar file
   --configfile CONFIGFILE
                         Path to config File
 ```

@@ -60,7 +60,7 @@ It serves as a middleware from the browser request to the requested object, whic
 
 <details><summary>Terraform Provider for Lyve Cloud</summary>
 
-[Terraform Lyve Cloud provider](https://github.com/Seagate/terraform-provider-lyvecloud)
+[Terraform Lyve Cloud provider](https://registry.terraform.io/providers/Seagate/lyvecloud)
 
 Terraform provider plugin for managing Lyve Cloud S3 buckets, objects, permissions and service accounts.
 
@@ -70,7 +70,7 @@ Terraform provider plugin for managing Lyve Cloud S3 buckets, objects, permissio
 
 [tar-index-extract](/tar-index-extract)
 
-Tool that allows extracting a small amount of files from a tar archive file located in an S3 bucket.
+Tool that allows extracting a small amount of files from a tar archive file located in an Lyve Cloud bucket.
 
 </details>
 
