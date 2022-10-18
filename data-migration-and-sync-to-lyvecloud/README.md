@@ -38,7 +38,7 @@ Then the backend IP address should be set to `192.168.0.100` in the `.env` file.
 
 **Step 2:** Build and run Docker container.
 
-* Inside your root directory *data-migartion-and-sync-to-lyvecloud-webapp*, run:<br>
+* Inside your root directory *data-migartion-and-sync-to-lyvecloud*, run:<br>
 ```docker-compose up --build```
 
 * Note: For a large quantity of migration tasks, you may use the following command to bring up multiple instances of workers:<br>
