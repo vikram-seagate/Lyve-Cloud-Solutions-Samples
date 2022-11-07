@@ -1,0 +1,14 @@
+lyvecloud:
+  access_key: 'Service Account Access Key'
+  secret_key: 'Service Account Secret Key'
+  log_bucket: 'log bucket name'
+  endpoint_url: 'Bucket url endpoint'
+
+datasources:
+  - influxdb
+
+influxdb:
+  host: 'http://Host_IP:PORT'
+  token: 'Influxdb token'
+  org: 'Influxdb Organize name'
+  bucket: 'Target bucket'
