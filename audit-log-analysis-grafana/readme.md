@@ -114,8 +114,8 @@ datasources:
   - influxdb
 
 influxdb:
-  host: 'http://localhost:8086'
-  token: 'FyQ3Hrqp_572rKX7AC1o8-EeQKCPzodnMniHzi5NFtH7-JoY4Ujr4_VqAiaK5_9B6ME2UmJhPwlFcEXm5dzjA=='
+  host: 'http://explicit ip of running machine:8086'
+  token: 'token from influx'
   org: 'STX-Lyve-Demo'
   bucket: 'Demo-Lyve-Logs'
 ```
@@ -200,16 +200,28 @@ If you don't have docker engine in your local environment, we recommmend to inst
 1.  Download project into your local and extract .zip file
 2.  Update the config.yaml file - [`setup config`](#set-up-your-config.yaml-configuaration)
 3.  Build a docker image
+after going over "# Install InfluxDB steps" 
+cd to main directory, a.k.a : .../audit-log-analysis-grafana
+and run the folowing commands.
 
-    ```Shell
-    docker build -f Dockerfile -t loggateway .
-    ```
+      1. Build Dockerfile
+      ```Shell
+      docker build -f Dockerfile -t loggateway .
+      ```
+      2. Create network. 
+      ```Shell
+      docker network create lyve-net
+      ```
+      3. Add influxdb in to a network
+      ```Shell
+      docker network connect lyve-net influxdb
+      ```
+      4. Finally run the docker with specify network
+      ```Shell
+      docker run -it --rm --net lyve-net loggateway:latest
+      ```
+ 
 
-4.  Run a docker image
-    ```Shell
-    # interactive mode for test and debug
-    docker run -it loggateway:latest
-    ```
 
 > **Note:** To run the application in detached mode, include the -d flag in the docker run command.
 
