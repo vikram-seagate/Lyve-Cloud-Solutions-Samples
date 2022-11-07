@@ -34,11 +34,11 @@ Notice the integration solutions are not part of the Lyve Cloud product. The int
 
 <details><summary>Pull and send audit logs from Lyve Cloud to different monitoring solutions </summary> 
 
-| Solution|Cloud Service|Technology|
-| :---:| :---:| :---:|
-| 1. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.](cloudwatch/)|CloudWatch|Python Script|
-| 2. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in Azure Monitor(Log Analytics).](azure-monitor/)| Azure Monitor|Function app|
-| 3. [Replicating new objects created in AWS S3 bucket to a Lyve Cloud bucket.](s3-replication-to-lyvecloud/) | AWS    | AWS Lambda | Manual       |
+| Solution|Monitoring service
+| :---:| :---:| 
+| 1. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in AWS CloudWatch.](cloudwatch/)|CloudWatch|
+| 2. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in Azure Monitor(Log Analytics).](azure-monitor/)| Azure Monitor|
+| 3. [Sending Lyve Cloud S3 API Audit Log events to be consumed and displayed in Grafana.](audit-log-analysis-grafana/) | Grafana|
 
 </details>
 
