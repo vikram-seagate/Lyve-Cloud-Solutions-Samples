@@ -73,7 +73,15 @@ Terraform provider plugin for managing Lyve Cloud S3 buckets, objects, permissio
 
 [tar-index-extract](/tar-index-extract)
 
-Tool that allows extracting a small amount of files from a tar archive file located in an Lyve Cloud bucket.
+This tool extracts a selection of files from a tar archive stored in an a Lyve Cloud bucket.
+
+</details>
+
+<details><summary>Integrating Apache Spark with Lyve Cloud</summary>
+
+[apache-spark](/apache-spark)
+
+Apache Spark is a powerful data processing engine that can be used to analyze large volumes of data. By combining it with Lyve Cloud, users can easily access and process their data stored on the platform. This solution provides a guide on how to use Apache Spark with Lyve Cloud, including setup instructions.
 
 </details>
 
