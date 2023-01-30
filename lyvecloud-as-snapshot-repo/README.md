@@ -1,5 +1,5 @@
 # lyvecloud-as-snapshot-repo
-Lyve Cloud snapshot and restore to Elasticsearch.
+Lyve Cloud provides an efficient and scalable solution for storing and managing Elasticsearch snapshots. The snapshots, or backups, of your Elasticsearch indices can be stored securely in the Lyve Cloud bucket, allowing you to easily restore your data in the event of a failure or outage. In addition, these snapshots are searchable, making it easier for you to find and restore the data you need. To use Lyve Cloud as your snapshot repository, you need to follow the steps outlined in this documentation, including creating a Lyve Cloud account, configuring your Elasticsearch cluster to use Lyve Cloud as a repository, and creating and managing snapshots.
 
 ## Requirements
 * Elastic search installed.
@@ -55,8 +55,6 @@ Here's what you'll need:
 * Endpoint URL
 
 # Snapshot and restore to Lyve Cloud running steps
-
-
 
 1. Load  access key and secret key to Elastic key store
 

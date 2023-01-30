@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  (SOIVS04132021)-Reference recipe to create CloudFront distribution with Lambda Function as origin
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    # define parameter logical grouping
+    ParameterGroups:
+      - Label:
+          default: Lambda Function Endpoint
+        Parameters:
+          - LambdaEndpoint
+        Parameters:
+          - LambdaEndpoint
+
+    # define parameter logical grouping
+    ParameterLabels:
+      LambdaEndpoint:
+        default: Remove 'https://' from the Function URL endpoint
+
+Parameters:
+  LambdaEndpoint:
+    Type: String
+    ConstraintDescription: Enter the Lambda Function URL endpoint
+
+Rules:
+  LambdaEndpointPresent:
+    Assertions:
+      - Assert: !Not
+          - !Equals
+            - Ref: LambdaEndpoint
+            - ''
+        AssertDescription: Lambda Function URL endpoint cannot be empty.
+
+Resources:
+
+  MyDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        PriceClass: PriceClass_All
+        HttpVersion: http2
+        IPV6Enabled: true
+        Comment: !Sub ${AWS::StackName}-Demo distribution with Lambda Function URL(cloudfront-lambda-url-2022)
+        Origins:
+        - DomainName: !Ref LambdaEndpoint
+          Id: LambdaOrigin
+          CustomOriginConfig:
+            HTTPSPort: 443
+            OriginProtocolPolicy: https-only
+        Enabled: 'true'
+        DefaultCacheBehavior:
+          TargetOriginId: LambdaOrigin
+          CachePolicyId: '658327ea-f89d-4fab-a63d-7e88639e58f6'
+          ViewerProtocolPolicy: redirect-to-https
+          SmoothStreaming: 'false'
+          Compress: 'true'
+
+Outputs:
+  CloudFrontDomain:
+    Description: CloudFront default domain name configured
+    Value: !Sub https://${MyDistribution.DomainName}/

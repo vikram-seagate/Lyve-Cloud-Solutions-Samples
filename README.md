@@ -85,4 +85,20 @@ Apache Spark is a powerful data processing engine that can be used to analyze la
 
 </details>
 
+<details><summary>Lyve Cloud as a snapshot repo for Elasticsearch</summary>
+
+[lyvecloud-as-snapshot-repo](/lyvecloud-as-snapshot-repo)
+
+Lyve Cloud offers a secure, efficient solution for storing and managing Elasticsearch snapshots. Snapshots can be easily restored in case of failure or outage and are searchable for easy access from the Lyve Cloud snapshot repo.
+
+</details>
+
+<details><summary>Integrating AWS CloudFront with Lyve Cloud</summary>
+
+[integrating-aws-cloudfront-with-lyve-cloud](/integrating-aws-cloudfront-with-lyve-cloud)
+
+Lyve Cloud S3 media content can be integrated with Amazon CloudFront for improved delivery and security. CloudFront and Lyve Cloud Object Storage work together to cache content closer to the viewer using a globally distributed content distribution network, which routes requests to the edge location with lowest latency for optimal performance.
+
+</details>
+
 The repository is licensed under the [Apache 2.0 License](LICENSE).
