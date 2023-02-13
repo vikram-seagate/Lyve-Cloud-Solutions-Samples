@@ -19,30 +19,30 @@ Before you can create your first dashboard, you need to add your data source.
 
 Note: Only users with the admin role can add data sources.
 1.	Select the cog icon on the side menu to show the configuration options. In configuration, select Data Sources.
-	<p align="center" style="text-align:left"><img alt="Figure 1: configuration_data_sources  " src="images/configuration_data_sources.png" width="600"/></p>
+	<p align="left" style="text-align:left"><img alt="Figure 1: configuration_data_sources  " src="images/configuration_data_sources.png" width="200"/></p>
 
 2.	This opens the data sources page, which displays a list of previously configured data sources for the Grafana instance.
 3.	Select Add data source to see a list of all supported data sources.
-	<p align="center" style="text-align:left"><img alt="Figure 2: add_data_source  " src="images/add_data_source.png" width="600"/></p>
+	<p align="left" style="text-align:left"><img alt="Figure 2: add_data_source  " src="images/add_data_source.png" width="400"/></p>
 4.	Select Prometheus. This opens the data source configuration page.
 5.	Configure the data source following instructions specific to the data source.
 6.	Add monitoring data source if not already exists, Save & Test.
-	Name – monitoring
-	URL - http://monitoring-prometheus-server
-	<p align="center" style="text-align:left"><img alt="Figure 3: monitoring  " src="images/monitoring.png" width="600"/></p>
+	* Name – monitoring
+	* URL - http://monitoring-prometheus-server
+	<p align="left" style="text-align:left"><img alt="Figure 3: monitoring  " src="images/monitoring.png" width="350"/></p>
 7.	Add app-monitoring data source, Save & Test.
-	Name - app-monitoring
-	URL - http://monitoring-prometheus-server.default-tenant.svc
-	<p align="center" style="text-align:left"><img alt="Figure 4: app_monitoring  " src="images/app_monitoring.png" width="600"/></p>
+	* Name - app-monitoring
+	* URL - http://monitoring-prometheus-server.default-tenant.svc
+	<p align="left" style="text-align:left"><img alt="Figure 4: app_monitoring  " src="images/app_monitoring.png" width="400"/></p>
 8.	After adding data sources, all configured data sources for the Grafana instance will be shown.
-	<p align="center" style="text-align:left"><img alt="Figure 5: configured_data_sources  " src="images/configured_data_sources.png" width="600"/></p>
+	<p align="left" style="text-align:left"><img alt="Figure 5: configured_data_sources  " src="images/configured_data_sources.png" width="400"/></p>
 
 ## Import monitoring cluster templates
 1.	Download the Cluster_Monitoring.zip file to your local system and extract it.
 2.	Grafana dashboard on the create tab, select Import.
-	<p align="center" style="text-align:left"><img alt="Figure 6: create_dashboard_import  " src="images/create_dashboard_import.png" width="600"/></p>
+	<p align="left" style="text-align:left"><img alt="Figure 6: create_dashboard_import  " src="images/create_dashboard_import.png" width="250"/></p>
 3.	Click Upload json file. Select json file from extracted Cluster_Monitoring folder and import.
-	<p align="center" style="text-align:left"><img alt="Figure 7: upload_json  " src="images/upload_json.png" width="600"/></p>
+	<p align="left" style="text-align:left"><img alt="Figure 7: upload_json  " src="images/upload_json.png" width="250"/></p>
 4.	Repeat above step for all json templates.
 
 ## Tested by
