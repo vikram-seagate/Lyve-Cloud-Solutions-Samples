@@ -38,10 +38,10 @@ Note: Only users with the admin role can add data sources.
 	<p align="left" style="text-align:left"><img alt="Figure 5: configured_data_sources  " src="images/configured_data_sources.png" width="400"/></p>
 
 ## Import monitoring cluster templates
-1.	Download the Cluster_Monitoring.zip file to your local system and extract it.
+1.	Download the json files from repository /code folder to your local system.
 2.	Grafana dashboard on the create tab, select Import.
 	<p align="left" style="text-align:left"><img alt="Figure 6: create_dashboard_import  " src="images/create_dashboard_import.png" width="250"/></p>
-3.	Click Upload json file. Select json file from extracted Cluster_Monitoring folder and import.
+3.	Click Upload json file. Select json file from local folder and import.
 	<p align="left" style="text-align:left"><img alt="Figure 7: upload_json  " src="images/upload_json.png" width="250"/></p>
 4.	Repeat above step for all json templates.
 
