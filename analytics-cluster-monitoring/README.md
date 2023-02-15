@@ -8,7 +8,7 @@ Iguazio platform includes a pre-deployed version of the open-source Grafana anal
 The setup of the Iguazio cluster should be completed.
 
 ## Running Steps
-**Step 1:** Fo to grafana dashboard.
+**Step 1:** Go to grafana dashboard.
 1. Log into the Iguazio cluster using the admin user.
 2. Go to the Clusters menu
 3. Navigate to Clusters -> APPLICATION -> Status Dashboard. This will open the Grafana dashboard home page.
