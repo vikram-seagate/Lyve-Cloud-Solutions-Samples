@@ -7,13 +7,13 @@ Iguazio platform includes a pre-deployed version of the open-source Grafana anal
 
 The setup of the Iguazio cluster should be completed.
 
-## Steps to go to grafana dashboard
-1.	Log into the Iguazio cluster using the admin user
-2.	Go to the Clusters menu
-3.	Navigate to Clusters -> APPLICATION -> Status Dashboard. This will open the Grafana dashboard home page.
+## Running Steps
+**Step 1:** Fo to grafana dashboard.
+1. Log into the Iguazio cluster using the admin user.
+2. Go to the Clusters menu
+3. Navigate to Clusters -> APPLICATION -> Status Dashboard. This will open the Grafana dashboard home page.
 
-
-## Add a data source
+**Step 2:** Add a data source.
 
 Before you can create your first dashboard, you need to add your data source.
 
@@ -36,8 +36,8 @@ Note: Only users with the admin role can add data sources.
 	<p align="left" style="text-align:left"><img alt="Figure 4: app_monitoring  " src="images/app_monitoring.png" width="400"/></p>
 8.	After adding data sources, all configured data sources for the Grafana instance will be shown.
 	<p align="left" style="text-align:left"><img alt="Figure 5: configured_data_sources  " src="images/configured_data_sources.png" width="400"/></p>
-
-## Import monitoring cluster templates
+	
+**Step 3:** Import monitoring cluster templates.
 1.	Download the json files from repository /code folder to your local system.
 2.	Grafana dashboard on the create tab, select Import.
 	<p align="left" style="text-align:left"><img alt="Figure 6: create_dashboard_import  " src="images/create_dashboard_import.png" width="250"/></p>
