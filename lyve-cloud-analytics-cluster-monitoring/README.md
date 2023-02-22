@@ -49,13 +49,13 @@ Note: Only users with the admin role can add data sources.
 
 ## Sample dashboards -
 1. Cluster Monitor
-   <p align="left" style="text-align:left"><img alt="Figure 8: configured_data_sources  " src="images/cluster_monitor.png" width="400"/></p>
+   <p align="left" style="text-align:left"><img alt="Figure 8: configured_data_sources  " src="images/cluster_monitor.png" width="500"/></p>
 2. Kubernetes Compute Resources Node Groups
-   <p align="left" style="text-align:left"><img alt="Figure 9: configured_data_sources  " src="images/kubernetes_compute_resources_node_groups.png" width="400"/></p>
+   <p align="left" style="text-align:left"><img alt="Figure 9: configured_data_sources  " src="images/kubernetes_compute_resources_node_groups.png" width="500"/></p>
 3. Spark Applications
-   <p align="left" style="text-align:left"><img alt="Figure 5: configured_data_sources  " src="images/spark_applications.png" width="400"/></p>
+   <p align="left" style="text-align:left"><img alt="Figure 5: configured_data_sources  " src="images/spark_applications.png" width="500"/></p>
 4. Spark UI
-   <p align="left" style="text-align:left"><img alt="Figure 5: configured_data_sources  " src="images/spark_ui.png" width="400"/></p>
+   <p align="left" style="text-align:left"><img alt="Figure 5: configured_data_sources  " src="images/spark_ui.png" width="500"/></p>
 
 ## Tested by
 * Feb 13, 2023: Vikram Godse (vikram.t.godse@seagate.com)
@@ -78,6 +78,10 @@ Note: Only users with the admin role can add data sources.
     └── create_dashboard_import.png
     └── monitoring.png
     └── upload_json.png	
+    └── cluster_monitor.png
+    └── kubernetes_compute_resources_node_groups.png
+    └── spark_applications.png
+    └── spark_ui.png	
 ```
 
 ### `/code`
