@@ -1,7 +1,9 @@
 # Lyve Cloud analytics cluster monitoring dashboard
 
 ## Introduction
-Iguazio platform includes a pre-deployed version of the open-source Grafana analytics and monitoring platform. This tutorial outlines the steps for importing monitoring dashboard by using the Grafana data source.
+Lyve Cloud Analytics platform allows users to analyze and visualize their data in real-time. Grafana is an open-source platform for data visualization and analytics that can be used to monitor Lyve Cloud Analytics clusters. To use Grafana to monitor Lyve Cloud Analytics, you will need to set up a data source in Grafana that points to your Lyve Cloud Analytics cluster. 
+
+Once you have set up the data source, you can use Grafana to create dashboards that display various metrics for your Lyve Cloud Analytics cluster. Iguazio platform includes a pre-deployed version of the Grafana analytics and monitoring platform. This tutorial outlines the steps for importing monitoring dashboard by using the Grafana data source to monitor your Lyve Cloud Analytics cluster can provide valuable insights into the performance and health of your data analytics infrastructure.
 
 ## Prerequisite
 
@@ -44,6 +46,16 @@ Note: Only users with the admin role can add data sources.
 3.	Click Upload json file. Select json file from local folder and import.
 	<p align="left" style="text-align:left"><img alt="Figure 7: upload_json  " src="images/upload_json.png" width="250"/></p>
 4.	Repeat above step for all json templates.
+
+## Sample dashboards -
+1. Cluster Monitor
+   <p align="left" style="text-align:left"><img alt="Figure 8: configured_data_sources  " src="images/cluster_monitor.png" width="400"/></p>
+2. Kubernetes Compute Resources Node Groups
+   <p align="left" style="text-align:left"><img alt="Figure 9: configured_data_sources  " src="images/kubernetes_compute_resources_node_groups.png" width="400"/></p>
+3. Spark Applications
+   <p align="left" style="text-align:left"><img alt="Figure 5: configured_data_sources  " src="images/spark_applications.png" width="400"/></p>
+4. Spark UI
+   <p align="left" style="text-align:left"><img alt="Figure 5: configured_data_sources  " src="images/spark_ui.png" width="400"/></p>
 
 ## Tested by
 * Feb 13, 2023: Vikram Godse (vikram.t.godse@seagate.com)
